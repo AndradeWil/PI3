@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Empresas | Controle Fisio{% endblock %}
+{% block content %}
+<section class="row g-4">
+    <article class="col-12 col-xl-5">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h4 mb-2">Cadastro de empresas</h2>
+                <p class="text-secondary mb-3">Cadastre empresas conveniadas para vincular pacientes e atendimentos corporativos.</p>
+                <form method="post" class="form-grid">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-primary">Salvar empresa</button>
+                </form>
+            </div>
+        </div>
+    </article>
+
+    <article class="col-12 col-xl-7">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h4 mb-2">Empresas cadastradas</h2>
+                <p class="text-secondary mb-3">Mantenha os dados de contato atualizados para facilitar o relacionamento.</p>
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Contato</th>
+                                <th>Telefone</th>
+                                <th>E-mail</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in itens %}
+                                <tr>
+                                    <td>{{ item.nome }}</td>
+                                    <td>{{ item.contato|default:'-' }}</td>
+                                    <td>{{ item.telefone|default:'-' }}</td>
+                                    <td>{{ item.email|default:'-' }}</td>
+                                    <td class="d-flex gap-2 flex-wrap">
+                                        <a href="{% url 'editar_empresa' item.id %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                                        <a href="{% url 'excluir_empresa' item.id %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="5">Nenhuma empresa cadastrada.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </article>
+</section>
+{% endblock %}

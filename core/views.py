@@ -104,11 +104,8 @@ def listar_criar_tipo_atendimento(request):
 	contexto = {
 		'form': form,
 		'itens': itens,
-		'titulo': 'Tipos de Atendimento',
-		'editar_url': 'editar_tipo_atendimento',
-		'excluir_url': 'excluir_tipo_atendimento',
 	}
-	return render(request, 'core/listar_criar.html', contexto)
+	return render(request, 'core/tipos_atendimento.html', contexto)
 
 
 @login_required
@@ -155,11 +152,8 @@ def listar_criar_empresa(request):
 	contexto = {
 		'form': form,
 		'itens': itens,
-		'titulo': 'Empresas',
-		'editar_url': 'editar_empresa',
-		'excluir_url': 'excluir_empresa',
 	}
-	return render(request, 'core/listar_criar.html', contexto)
+	return render(request, 'core/empresas.html', contexto)
 
 
 @login_required
