@@ -170,11 +170,11 @@ fieldset legend {
 
 /* ─── Auth pages ─────────────────────────────────── */
 .auth-wrap {
-    min-height: calc(100vh - 80px);
+    min-height: calc(100vh - 133px);
     display: flex;
     align-items: start;
     justify-content: center;
-    padding: 3rem 1rem;
+    padding: 2rem 1rem;
 }
 .auth-card {
     width: 100%;
