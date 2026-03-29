@@ -4,6 +4,9 @@
 <section class="card card-narrow">
     <h2>Confirmar exclusao</h2>
     <p>Tem certeza que deseja excluir: <strong>{{ objeto }}</strong>?</p>
+    {% if erro %}
+        <p class="danger-text">{{ erro }}</p>
+    {% endif %}
     <form method="post" class="actions-row">
         {% csrf_token %}
         <button type="submit" class="danger-solid">Excluir definitivamente</button>

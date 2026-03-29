@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
+from django.db.models import ProtectedError
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -100,7 +101,43 @@ def listar_criar_tipo_atendimento(request):
 		return redirect('tipos_atendimento')
 
 	itens = fisioterapeuta.tipos_atendimento.all().order_by('nome')
-	return render(request, 'core/listar_criar.html', {'form': form, 'itens': itens, 'titulo': 'Tipos de Atendimento'})
+	contexto = {
+		'form': form,
+		'itens': itens,
+		'titulo': 'Tipos de Atendimento',
+		'editar_url': 'editar_tipo_atendimento',
+		'excluir_url': 'excluir_tipo_atendimento',
+	}
+	return render(request, 'core/listar_criar.html', contexto)
+
+
+@login_required
+def editar_tipo_atendimento(request, tipo_id):
+	fisioterapeuta = _fisioterapeuta_do_usuario(request.user)
+	tipo = get_object_or_404(fisioterapeuta.tipos_atendimento, id=tipo_id)
+	form = TipoAtendimentoForm(request.POST or None, instance=tipo)
+	if request.method == 'POST' and form.is_valid():
+		form.save()
+		return redirect('tipos_atendimento')
+	return render(request, 'core/editar_item.html', {'form': form, 'titulo': f'Editar tipo de atendimento: {tipo.nome}'})
+
+
+@login_required
+def excluir_tipo_atendimento(request, tipo_id):
+	fisioterapeuta = _fisioterapeuta_do_usuario(request.user)
+	tipo = get_object_or_404(fisioterapeuta.tipos_atendimento, id=tipo_id)
+	if request.method == 'POST':
+		try:
+			tipo.delete()
+			return redirect('tipos_atendimento')
+		except ProtectedError:
+			contexto = {
+				'objeto': tipo,
+				'voltar_url': 'tipos_atendimento',
+				'erro': 'Este tipo de atendimento esta vinculado a atendimentos e nao pode ser excluido.',
+			}
+			return render(request, 'core/confirmar_exclusao.html', contexto)
+	return render(request, 'core/confirmar_exclusao.html', {'objeto': tipo, 'voltar_url': 'tipos_atendimento'})
 
 
 @login_required
@@ -115,7 +152,35 @@ def listar_criar_empresa(request):
 		return redirect('empresas')
 
 	itens = fisioterapeuta.empresas.all().order_by('nome')
-	return render(request, 'core/listar_criar.html', {'form': form, 'itens': itens, 'titulo': 'Empresas'})
+	contexto = {
+		'form': form,
+		'itens': itens,
+		'titulo': 'Empresas',
+		'editar_url': 'editar_empresa',
+		'excluir_url': 'excluir_empresa',
+	}
+	return render(request, 'core/listar_criar.html', contexto)
+
+
+@login_required
+def editar_empresa(request, empresa_id):
+	fisioterapeuta = _fisioterapeuta_do_usuario(request.user)
+	empresa = get_object_or_404(fisioterapeuta.empresas, id=empresa_id)
+	form = EmpresaForm(request.POST or None, instance=empresa)
+	if request.method == 'POST' and form.is_valid():
+		form.save()
+		return redirect('empresas')
+	return render(request, 'core/editar_item.html', {'form': form, 'titulo': f'Editar empresa: {empresa.nome}'})
+
+
+@login_required
+def excluir_empresa(request, empresa_id):
+	fisioterapeuta = _fisioterapeuta_do_usuario(request.user)
+	empresa = get_object_or_404(fisioterapeuta.empresas, id=empresa_id)
+	if request.method == 'POST':
+		empresa.delete()
+		return redirect('empresas')
+	return render(request, 'core/confirmar_exclusao.html', {'objeto': empresa, 'voltar_url': 'empresas'})
 
 
 @login_required

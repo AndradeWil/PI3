@@ -12,13 +12,41 @@
     </article>
     <article class="card">
         <h2>Lista de {{ titulo }}</h2>
-        <ul class="list-clean">
-            {% for item in itens %}
-                <li>{{ item }}</li>
-            {% empty %}
-                <li>Nenhum registro cadastrado.</li>
-            {% endfor %}
-        </ul>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Detalhes</th>
+                    <th>Acoes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in itens %}
+                    <tr>
+                        <td>{{ item.nome }}</td>
+                        <td>
+                            {% if item.valor_padrao %}
+                                Valor padrao: R$ {{ item.valor_padrao }}
+                            {% elif item.contato or item.telefone or item.email %}
+                                {{ item.contato|default:item.telefone|default:item.email }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td class="actions">
+                            {% if editar_url %}
+                                <a href="{% url editar_url item.id %}">Editar</a>
+                            {% endif %}
+                            {% if excluir_url %}
+                                <a href="{% url excluir_url item.id %}" class="danger">Excluir</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="3">Nenhum registro cadastrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </article>
 </section>
 {% endblock %}

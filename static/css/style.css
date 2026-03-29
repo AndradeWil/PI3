@@ -90,6 +90,11 @@ button,
     border-color: #9e2f2f;
 }
 
+.danger-text {
+    color: #9e2f2f;
+    font-weight: 700;
+}
+
 .container {
     max-width: 1140px;
     margin: 1.3rem auto;
