@@ -134,7 +134,7 @@ def excluir_tipo_atendimento(request, tipo_id):
 			contexto = {
 				'objeto': tipo,
 				'voltar_url': 'tipos_atendimento',
-				'erro': 'Este tipo de atendimento esta vinculado a atendimentos e nao pode ser excluido.',
+				'erro': 'Este tipo de atendimento está vinculado a atendimentos e não pode ser excluído.',
 			}
 			return render(request, 'core/confirmar_exclusao.html', contexto)
 	return render(request, 'core/confirmar_exclusao.html', {'objeto': tipo, 'voltar_url': 'tipos_atendimento'})
@@ -265,7 +265,7 @@ def listar_criar_sessao(request):
 		return redirect('sessoes')
 
 	itens = Sessao.objects.filter(atendimento__fisioterapeuta=fisioterapeuta).select_related('atendimento', 'atendimento__paciente')
-	return render(request, 'core/sessoes.html', {'form': form, 'itens': itens, 'titulo': 'Sessoes / Ponto'})
+	return render(request, 'core/sessoes.html', {'form': form, 'itens': itens, 'titulo': 'Sessões / Ponto'})
 
 
 @login_required
@@ -276,7 +276,7 @@ def editar_sessao(request, sessao_id):
 	if request.method == 'POST' and form.is_valid():
 		form.save()
 		return redirect('sessoes')
-	return render(request, 'core/editar_item.html', {'form': form, 'titulo': f'Editar sessao: {sessao}'})
+	return render(request, 'core/editar_item.html', {'form': form, 'titulo': f'Editar sessão: {sessao}'})
 
 
 @login_required
@@ -301,7 +301,7 @@ def bater_ponto(request, atendimento_id):
 		duracao_minutos=60,
 		valor_sessao=atendimento.valor_por_sessao,
 		compareceu=True,
-		observacoes='Registro rapido de ponto.',
+		observacoes='Registro rápido de ponto.',
 	)
 	return redirect('sessoes')
 
@@ -350,12 +350,12 @@ def exportar_relatorio_pdf(request):
 	pdf = canvas.Canvas(response, pagesize=A4)
 	width, height = A4
 
-	pdf.setTitle('Relatorio de Atendimentos')
+	pdf.setTitle('Relatório de Atendimentos')
 	pdf.setFont('Helvetica-Bold', 14)
-	pdf.drawString(40, height - 40, 'Relatorio de Atendimentos')
+	pdf.drawString(40, height - 40, 'Relatório de Atendimentos')
 	pdf.setFont('Helvetica', 10)
 
-	periodo = f'Periodo: {data_inicio or "inicio"} ate {data_fim or "hoje"}'
+	periodo = f'Período: {data_inicio or "início"} até {data_fim or "hoje"}'
 	pdf.drawString(40, height - 60, periodo)
 	pdf.drawString(40, height - 76, f'Profissional: {fisioterapeuta}')
 
@@ -385,7 +385,7 @@ def exportar_relatorio_pdf(request):
 			y = height - 40
 
 	pdf.setFont('Helvetica-Bold', 10)
-	pdf.drawString(40, max(y - 14, 30), f'Total de sessoes: {sessoes.count()}')
+	pdf.drawString(40, max(y - 14, 30), f'Total de sessões: {sessoes.count()}')
 	pdf.drawString(220, max(y - 14, 30), f'Total financeiro: R$ {total_valor}')
 	pdf.save()
 	return response

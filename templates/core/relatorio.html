@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% block title %}Relatorios | Controle Fisio{% endblock %}
+{% block title %}Relatórios | Controle Fisio{% endblock %}
 {% block content %}
 <section class="card border-0 shadow-sm mb-4">
     <div class="card-body">
-    <h2 class="h4 mb-3">Relatorio de atendimentos por periodo</h2>
+    <h2 class="h4 mb-3">Relatório de atendimentos por período</h2>
     <form method="get" class="filter-row">
         {{ form.as_p }}
         <button type="submit" class="btn btn-primary">Filtrar</button>
@@ -13,7 +13,7 @@
 </section>
 
 <section class="row g-3 mb-4">
-    <article class="col-12 col-md-4"><div class="card h-100 border-0 shadow-sm"><div class="card-body"><h3 class="h6 text-secondary mb-2">Total de sessoes</h3><p class="display-6 fw-bold text-primary mb-0">{{ total_sessoes }}</p></div></div></article>
+    <article class="col-12 col-md-4"><div class="card h-100 border-0 shadow-sm"><div class="card-body"><h3 class="h6 text-secondary mb-2">Total de sessões</h3><p class="display-6 fw-bold text-primary mb-0">{{ total_sessoes }}</p></div></div></article>
     <article class="col-12 col-md-4"><div class="card h-100 border-0 shadow-sm"><div class="card-body"><h3 class="h6 text-secondary mb-2">Total de horas</h3><p class="display-6 fw-bold text-primary mb-0">{{ total_horas }}</p></div></div></article>
     <article class="col-12 col-md-4"><div class="card h-100 border-0 shadow-sm bg-warning-subtle"><div class="card-body"><h3 class="h6 text-secondary mb-2">Total financeiro</h3><p class="display-6 fw-bold text-primary mb-0">R$ {{ total_valor }}</p></div></div></article>
 </section>
@@ -29,7 +29,7 @@
                 <th>Paciente</th>
                 <th>Empresa</th>
                 <th>Tipo</th>
-                <th>Duracao</th>
+                <th>Duração</th>
                 <th>Valor</th>
             </tr>
         </thead>
@@ -44,7 +44,7 @@
                     <td>R$ {{ item.valor_sessao }}</td>
                 </tr>
             {% empty %}
-                <tr><td colspan="6">Nenhum registro no periodo.</td></tr>
+                <tr><td colspan="6">Nenhum registro no período.</td></tr>
             {% endfor %}
         </tbody>
     </table>

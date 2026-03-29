@@ -24,7 +24,7 @@
                 <tr>
                     <th>Nome</th>
                     <th>Detalhes</th>
-                    <th>Acoes</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -33,7 +33,7 @@
                         <td>{{ item.nome }}</td>
                         <td>
                             {% if item.valor_padrao %}
-                                Valor padrao: R$ {{ item.valor_padrao }}
+                                Valor padrão: R$ {{ item.valor_padrao }}
                             {% elif item.contato or item.telefone or item.email %}
                                 {{ item.contato|default:item.telefone|default:item.email }}
                             {% else %}

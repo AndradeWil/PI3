@@ -1,29 +1,29 @@
-# PI3 - Sistema de Gestao de Atendimentos em Fisioterapia
+# PI3 - Sistema de Gestão de Atendimentos em Fisioterapia
 
-Projeto academico desenvolvido com Django para gerenciamento de pacientes, atendimentos, sessoes, relatorios e painel financeiro.
+Projeto acadêmico desenvolvido com Django para gerenciamento de pacientes, atendimentos, sessões, relatórios e painel financeiro.
 
 ## Tecnologias
 
 - Python 3.12+
 - Django 6.0.3
 - SQLite3 (banco local, arquivo `db.sqlite3`)
-- ReportLab (geracao de PDF)
+- ReportLab (geração de PDF)
 
 ## Funcionalidades principais
 
-- Cadastro e autenticacao de usuario (fisioterapeuta)
+- Cadastro e autenticação de usuário (fisioterapeuta)
 - Cadastro de tipos de atendimento
 - Cadastro de empresas
 - Cadastro de pacientes
 - Cadastro e gerenciamento de atendimentos
-- Registro de sessoes (incluindo "bater ponto")
-- Relatorio por periodo
-- Exportacao de relatorio em PDF
+- Registro de sessões (incluindo "bater ponto")
+- Relatório por período
+- Exportação de relatório em PDF
 - Painel financeiro por empresa e tipo de atendimento
 
 ## Como rodar o projeto (passo a passo)
 
-### 1. Clonar o repositorio
+### 1. Clonar o repositório
 
 ```bash
 git clone <URL_DO_REPOSITORIO>
@@ -39,7 +39,7 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
-Se houver bloqueio de execucao de scripts no PowerShell:
+Se houver bloqueio de execução de scripts no PowerShell:
 
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
@@ -59,26 +59,26 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-### 3. Instalar dependencias
+### 3. Instalar dependências
 
 ```bash
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-Alternativa (instalacao direta):
+Alternativa (instalação direta):
 
 ```bash
 pip install Django==6.0.3 reportlab==4.4.4
 ```
 
-### 4. Aplicar migracoes do banco de dados
+### 4. Aplicar migrações do banco de dados
 
 ```bash
 python manage.py migrate
 ```
 
-### 5. (Opcional) Criar usuario administrador
+### 5. (Opcional) Criar usuário administrador
 
 ```bash
 python manage.py createsuperuser
@@ -90,17 +90,17 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Com o servidor em execucao, abra:
+Com o servidor em execução, abra:
 
 - App: http://127.0.0.1:8000/
 - Admin: http://127.0.0.1:8000/admin/
 
 ## Primeiro acesso
 
-- Se ainda nao houver usuario, acesse `http://127.0.0.1:8000/registro/` para registrar um fisioterapeuta.
-- Login padrao do Django: `http://127.0.0.1:8000/accounts/login/`.
+- Se ainda não houver usuário, acesse `http://127.0.0.1:8000/registro/` para registrar um fisioterapeuta.
+- Login padrão do Django: `http://127.0.0.1:8000/accounts/login/`.
 
-## Comandos uteis
+## Comandos úteis
 
 ### Rodar testes
 
@@ -108,14 +108,14 @@ Com o servidor em execucao, abra:
 python manage.py test
 ```
 
-### Gerar novas migracoes (quando alterar models)
+### Gerar novas migrações (quando alterar models)
 
 ```bash
 python manage.py makemigrations
 python manage.py migrate
 ```
 
-### Coletar arquivos estaticos (uso mais comum em deploy)
+### Coletar arquivos estáticos (uso mais comum em deploy)
 
 ```bash
 python manage.py collectstatic
@@ -127,17 +127,17 @@ python manage.py collectstatic
 PI3/
 |-- manage.py
 |-- db.sqlite3
-|-- config/         # Configuracoes do projeto Django
+|-- config/         # Configurações do projeto Django
 |-- core/           # App principal (models, views, forms, urls)
 |-- templates/      # Templates HTML
 `-- static/         # CSS e imagens
 ```
 
-## Solucao de problemas comuns
+## Solução de problemas comuns
 
 - Erro "No module named django":
-  - Verifique se o ambiente virtual esta ativado.
-  - Reinstale dependencias com `pip install -r requirements.txt`.
+  - Verifique se o ambiente virtual está ativado.
+  - Reinstale dependências com `pip install -r requirements.txt`.
 
 - Porta 8000 em uso:
   - Rode em outra porta: `python manage.py runserver 8001`.
@@ -145,8 +145,8 @@ PI3/
 - Alterou models e recebeu erro de tabela/coluna:
   - Execute `python manage.py makemigrations` e depois `python manage.py migrate`.
 
-## Observacoes
+## Observações
 
-- Este projeto esta configurado para ambiente de desenvolvimento (`DEBUG = True`).
+- Este projeto está configurado para ambiente de desenvolvimento (`DEBUG = True`).
 - O banco SQLite local fica em `db.sqlite3`.
-- O idioma esta configurado para Portugues (Brasil) e fuso horario `America/Sao_Paulo`.
+- O idioma está configurado para Português (Brasil) e fuso horário `America/Sao_Paulo`.
