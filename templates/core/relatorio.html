@@ -1,25 +1,28 @@
 {% extends 'base.html' %}
 {% block title %}Relatorios | Controle Fisio{% endblock %}
 {% block content %}
-<section class="card">
-    <h2>Relatorio de atendimentos por periodo</h2>
+<section class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+    <h2 class="h4 mb-3">Relatorio de atendimentos por periodo</h2>
     <form method="get" class="filter-row">
         {{ form.as_p }}
-        <button type="submit">Filtrar</button>
-        <a href="{% url 'exportar_relatorio_pdf' %}?data_inicio={{ request.GET.data_inicio }}&data_fim={{ request.GET.data_fim }}" class="btn-inline">Exportar PDF</a>
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        <a href="{% url 'exportar_relatorio_pdf' %}?data_inicio={{ request.GET.data_inicio }}&data_fim={{ request.GET.data_fim }}" class="btn btn-outline-primary">Exportar PDF</a>
     </form>
+    </div>
 </section>
 
-<section class="stats stats-3">
-    <article class="kpi"><h3>Total de sessoes</h3><p>{{ total_sessoes }}</p></article>
-    <article class="kpi"><h3>Total de horas</h3><p>{{ total_horas }}</p></article>
-    <article class="kpi"><h3>Total financeiro</h3><p>R$ {{ total_valor }}</p></article>
+<section class="row g-3 mb-4">
+    <article class="col-12 col-md-4"><div class="card h-100 border-0 shadow-sm"><div class="card-body"><h3 class="h6 text-secondary mb-2">Total de sessoes</h3><p class="display-6 fw-bold text-primary mb-0">{{ total_sessoes }}</p></div></div></article>
+    <article class="col-12 col-md-4"><div class="card h-100 border-0 shadow-sm"><div class="card-body"><h3 class="h6 text-secondary mb-2">Total de horas</h3><p class="display-6 fw-bold text-primary mb-0">{{ total_horas }}</p></div></div></article>
+    <article class="col-12 col-md-4"><div class="card h-100 border-0 shadow-sm bg-warning-subtle"><div class="card-body"><h3 class="h6 text-secondary mb-2">Total financeiro</h3><p class="display-6 fw-bold text-primary mb-0">R$ {{ total_valor }}</p></div></div></article>
 </section>
 
-<section class="card">
-    <h2>Detalhamento</h2>
+<section class="card border-0 shadow-sm">
+    <div class="card-body">
+    <h2 class="h4 mb-3">Detalhamento</h2>
     <div class="table-responsive">
-    <table class="table table-hover align-middle mb-0">
+    <table class="table table-hover table-striped align-middle mb-0">
         <thead>
             <tr>
                 <th>Data</th>
@@ -45,6 +48,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
     </div>
 </section>
 {% endblock %}

@@ -1,22 +1,31 @@
 {% extends 'base.html' %}
 {% block title %}Dashboard | Controle Fisio{% endblock %}
 {% block content %}
-<section class="stats">
-    <article class="kpi"><h3>Pacientes</h3><p>{{ total_pacientes }}</p></article>
-    <article class="kpi"><h3>Atendimentos ativos</h3><p>{{ total_atendimentos }}</p></article>
-    <article class="kpi"><h3>Sessoes registradas</h3><p>{{ total_sessoes }}</p></article>
-    <article class="kpi"><h3>Faturamento no mes</h3><p>R$ {{ total_mes }}</p></article>
+<section class="row g-3 mb-4">
+    <article class="col-12 col-sm-6 col-xl-3">
+        <div class="card h-100 border-0 shadow-sm bg-info-subtle"><div class="card-body"><h3 class="h6 text-secondary mb-2">Pacientes</h3><p class="display-6 fw-bold text-primary mb-0">{{ total_pacientes }}</p></div></div>
+    </article>
+    <article class="col-12 col-sm-6 col-xl-3">
+        <div class="card h-100 border-0 shadow-sm bg-light"><div class="card-body"><h3 class="h6 text-secondary mb-2">Atendimentos ativos</h3><p class="display-6 fw-bold text-primary mb-0">{{ total_atendimentos }}</p></div></div>
+    </article>
+    <article class="col-12 col-sm-6 col-xl-3">
+        <div class="card h-100 border-0 shadow-sm bg-light"><div class="card-body"><h3 class="h6 text-secondary mb-2">Sessões registradas</h3><p class="display-6 fw-bold text-primary mb-0">{{ total_sessoes }}</p></div></div>
+    </article>
+    <article class="col-12 col-sm-6 col-xl-3">
+        <div class="card h-100 border-0 shadow-sm bg-warning-subtle"><div class="card-body"><h3 class="h6 text-secondary mb-2">Faturamento no mês</h3><p class="display-6 fw-bold text-primary mb-0">R$ {{ total_mes }}</p></div></div>
+    </article>
 </section>
 
-<section class="card">
-    <h2>Ultimas sessoes</h2>
+<section class="card border-0 shadow-sm">
+    <div class="card-body">
+    <h2 class="h4 mb-3">Últimas sessões</h2>
     <div class="table-responsive">
-    <table class="table table-hover align-middle mb-0">
+    <table class="table table-hover table-striped align-middle mb-0">
         <thead>
             <tr>
                 <th>Paciente</th>
                 <th>Data</th>
-                <th>Duracao</th>
+                <th>Duração</th>
                 <th>Valor</th>
                 <th>Compareceu</th>
             </tr>
@@ -28,13 +37,14 @@
                     <td>{{ sessao.data_hora|date:'d/m/Y H:i' }}</td>
                     <td>{{ sessao.duracao_minutos }} min</td>
                     <td>R$ {{ sessao.valor_sessao }}</td>
-                    <td>{% if sessao.compareceu %}Sim{% else %}Nao{% endif %}</td>
+                    <td>{% if sessao.compareceu %}Sim{% else %}Não{% endif %}</td>
                 </tr>
             {% empty %}
-                <tr><td colspan="5">Nenhuma sessao registrada.</td></tr>
+                <tr><td colspan="5">Nenhuma sessão registrada.</td></tr>
             {% endfor %}
         </tbody>
     </table>
+    </div>
     </div>
 </section>
 {% endblock %}

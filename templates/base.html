@@ -15,7 +15,7 @@
                 <img src="{% static 'img/logo.png' %}" alt="Logo do sistema" class="brand-logo">
                 <span class="d-flex flex-column">
                     <strong class="brand-title">PhysioManage</strong>
-                    <small class="brand-subtitle">Gestao de atendimentos fisioterapeuticos</small>
+                    <small class="brand-subtitle">Gestão de atendimentos fisioterapêuticos</small>
                 </span>
             </a>
 
@@ -31,8 +31,8 @@
                         <a class="nav-link" href="{% url 'empresas' %}">Empresas</a>
                         <a class="nav-link" href="{% url 'pacientes' %}">Pacientes</a>
                         <a class="nav-link" href="{% url 'atendimentos' %}">Atendimentos</a>
-                        <a class="nav-link" href="{% url 'sessoes' %}">Sessoes</a>
-                        <a class="nav-link" href="{% url 'relatorio' %}">Relatorios</a>
+                        <a class="nav-link" href="{% url 'sessoes' %}">Sessões</a>
+                        <a class="nav-link" href="{% url 'relatorio' %}">Relatórios</a>
                         <a class="nav-link" href="{% url 'painel_financeiro' %}">Financeiro</a>
                         <form method="post" action="{% url 'logout' %}" class="ms-lg-2 mt-2 mt-lg-0">
                             {% csrf_token %}
@@ -53,16 +53,14 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script>
-        document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea').forEach(function (el) {
+        document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), textarea').forEach(function (el) {
             el.classList.add('form-control');
+        });
+        document.querySelectorAll('select').forEach(function (el) {
+            el.classList.add('form-select');
         });
         document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(function (el) {
             el.classList.add('form-check-input');
-        });
-        document.querySelectorAll('form button[type="submit"]').forEach(function (btn) {
-            if (!btn.classList.contains('danger-solid') && !btn.classList.contains('btn')) {
-                btn.classList.add('btn', 'btn-primary');
-            }
         });
         document.querySelectorAll('.navbar .nav-link').forEach(function (link) {
             if (link.getAttribute('href') === window.location.pathname) {

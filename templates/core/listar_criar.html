@@ -1,19 +1,25 @@
 {% extends 'base.html' %}
 {% block title %}{{ titulo }} | Controle Fisio{% endblock %}
 {% block content %}
-<section class="layout-split">
-    <article class="card">
-        <h2>Novo registro - {{ titulo }}</h2>
+<section class="row g-4">
+    <article class="col-12 col-xl-5">
+        <div class="card border-0 shadow-sm">
+        <div class="card-body">
+        <h2 class="h4 mb-3">Novo registro - {{ titulo }}</h2>
         <form method="post" class="form-grid">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit">Salvar</button>
+            <button type="submit" class="btn btn-primary">Salvar</button>
         </form>
+        </div>
+        </div>
     </article>
-    <article class="card">
-        <h2>Lista de {{ titulo }}</h2>
+    <article class="col-12 col-xl-7">
+        <div class="card border-0 shadow-sm">
+        <div class="card-body">
+        <h2 class="h4 mb-3">Lista de {{ titulo }}</h2>
         <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover table-striped align-middle mb-0">
             <thead>
                 <tr>
                     <th>Nome</th>
@@ -34,12 +40,12 @@
                                 -
                             {% endif %}
                         </td>
-                        <td class="actions">
+                        <td class="d-flex gap-2 flex-wrap">
                             {% if editar_url %}
-                                <a href="{% url editar_url item.id %}">Editar</a>
+                                <a href="{% url editar_url item.id %}" class="btn btn-sm btn-outline-primary">Editar</a>
                             {% endif %}
                             {% if excluir_url %}
-                                <a href="{% url excluir_url item.id %}" class="danger">Excluir</a>
+                                <a href="{% url excluir_url item.id %}" class="btn btn-sm btn-outline-danger">Excluir</a>
                             {% endif %}
                         </td>
                     </tr>
@@ -48,6 +54,8 @@
                 {% endfor %}
             </tbody>
         </table>
+        </div>
+        </div>
         </div>
     </article>
 </section>

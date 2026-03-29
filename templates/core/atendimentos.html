@@ -1,19 +1,25 @@
 {% extends 'base.html' %}
 {% block title %}Atendimentos | Controle Fisio{% endblock %}
 {% block content %}
-<section class="layout-split">
-    <article class="card">
-        <h2>Novo atendimento</h2>
+<section class="row g-4">
+    <article class="col-12 col-xl-5">
+        <div class="card border-0 shadow-sm">
+        <div class="card-body">
+        <h2 class="h4 mb-3">Novo atendimento</h2>
         <form method="post" class="form-grid">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit">Salvar atendimento</button>
+            <button type="submit" class="btn btn-primary">Salvar atendimento</button>
         </form>
+        </div>
+        </div>
     </article>
-    <article class="card">
-        <h2>Atendimentos cadastrados</h2>
+    <article class="col-12 col-xl-7">
+        <div class="card border-0 shadow-sm">
+        <div class="card-body">
+        <h2 class="h4 mb-3">Atendimentos cadastrados</h2>
         <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover table-striped align-middle mb-0">
             <thead>
                 <tr>
                     <th>Paciente</th>
@@ -30,16 +36,16 @@
                         <td>{{ item.paciente.nome }}</td>
                         <td>{{ item.empresa|default:'Particular' }}</td>
                         <td>{{ item.tipo_atendimento.nome }}</td>
-                        <td>R$ {{ item.valor_por_sessao }}</td>
+                        <td><span class="badge text-bg-success">R$ {{ item.valor_por_sessao }}</span></td>
                         <td>
                             <form method="post" action="{% url 'bater_ponto' item.id %}">
                                 {% csrf_token %}
-                                <button type="submit" class="btn-inline">Bater ponto</button>
+                                <button type="submit" class="btn btn-sm btn-success">Bater ponto</button>
                             </form>
                         </td>
-                        <td class="actions">
-                            <a href="{% url 'editar_atendimento' item.id %}">Editar</a>
-                            <a href="{% url 'excluir_atendimento' item.id %}" class="danger">Excluir</a>
+                        <td class="d-flex gap-2 flex-wrap">
+                            <a href="{% url 'editar_atendimento' item.id %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                            <a href="{% url 'excluir_atendimento' item.id %}" class="btn btn-sm btn-outline-danger">Excluir</a>
                         </td>
                     </tr>
                 {% empty %}
@@ -47,6 +53,8 @@
                 {% endfor %}
             </tbody>
         </table>
+        </div>
+        </div>
         </div>
     </article>
 </section>

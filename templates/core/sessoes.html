@@ -1,19 +1,25 @@
 {% extends 'base.html' %}
 {% block title %}Sessoes | Controle Fisio{% endblock %}
 {% block content %}
-<section class="layout-split">
-    <article class="card">
-        <h2>Registrar sessao/atendimento</h2>
+<section class="row g-4">
+    <article class="col-12 col-xl-5">
+        <div class="card border-0 shadow-sm">
+        <div class="card-body">
+        <h2 class="h4 mb-3">Registrar sessao/atendimento</h2>
         <form method="post" class="form-grid">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit">Registrar sessao</button>
+            <button type="submit" class="btn btn-primary">Registrar sessao</button>
         </form>
+        </div>
+        </div>
     </article>
-    <article class="card">
-        <h2>Historico</h2>
+    <article class="col-12 col-xl-7">
+        <div class="card border-0 shadow-sm">
+        <div class="card-body">
+        <h2 class="h4 mb-3">Historico</h2>
         <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover table-striped align-middle mb-0">
             <thead>
                 <tr>
                     <th>Paciente</th>
@@ -30,11 +36,17 @@
                         <td>{{ item.atendimento.paciente.nome }}</td>
                         <td>{{ item.data_hora|date:'d/m/Y H:i' }}</td>
                         <td>{{ item.duracao_minutos }} min</td>
-                        <td>R$ {{ item.valor_sessao }}</td>
-                        <td>{% if item.compareceu %}Atendido{% else %}Nao compareceu{% endif %}</td>
-                        <td class="actions">
-                            <a href="{% url 'editar_sessao' item.id %}">Editar</a>
-                            <a href="{% url 'excluir_sessao' item.id %}" class="danger">Excluir</a>
+                        <td><span class="badge text-bg-success">R$ {{ item.valor_sessao }}</span></td>
+                        <td>
+                            {% if item.compareceu %}
+                                <span class="badge text-bg-primary">Atendido</span>
+                            {% else %}
+                                <span class="badge text-bg-secondary">Nao compareceu</span>
+                            {% endif %}
+                        </td>
+                        <td class="d-flex gap-2 flex-wrap">
+                            <a href="{% url 'editar_sessao' item.id %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                            <a href="{% url 'excluir_sessao' item.id %}" class="btn btn-sm btn-outline-danger">Excluir</a>
                         </td>
                     </tr>
                 {% empty %}
@@ -42,6 +54,8 @@
                 {% endfor %}
             </tbody>
         </table>
+        </div>
+        </div>
         </div>
     </article>
 </section>

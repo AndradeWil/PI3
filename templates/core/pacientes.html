@@ -1,19 +1,25 @@
 {% extends 'base.html' %}
 {% block title %}Pacientes | Controle Fisio{% endblock %}
 {% block content %}
-<section class="layout-split">
-    <article class="card">
-        <h2>Novo paciente</h2>
+<section class="row g-4">
+    <article class="col-12 col-xl-5">
+        <div class="card border-0 shadow-sm">
+        <div class="card-body">
+        <h2 class="h4 mb-3">Novo paciente</h2>
         <form method="post" class="form-grid">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit">Salvar paciente</button>
+            <button type="submit" class="btn btn-primary">Salvar paciente</button>
         </form>
+        </div>
+        </div>
     </article>
-    <article class="card">
-        <h2>Pacientes cadastrados</h2>
+    <article class="col-12 col-xl-7">
+        <div class="card border-0 shadow-sm">
+        <div class="card-body">
+        <h2 class="h4 mb-3">Pacientes cadastrados</h2>
         <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover table-striped align-middle mb-0">
             <thead>
                 <tr>
                     <th>Nome</th>
@@ -30,11 +36,11 @@
                         <td>{{ item.nome }}</td>
                         <td>{{ item.idade|default:'-' }}</td>
                         <td>{{ item.telefone|default:item.email|default:'-' }}</td>
-                        <td>{{ item.frequencia_por_dia }}x/dia</td>
+                        <td><span class="badge text-bg-info">{{ item.frequencia_por_dia }}x/dia</span></td>
                         <td>{{ item.empresa|default:'Particular' }}</td>
-                        <td class="actions">
-                            <a href="{% url 'editar_paciente' item.id %}">Editar</a>
-                            <a href="{% url 'excluir_paciente' item.id %}" class="danger">Excluir</a>
+                        <td class="d-flex gap-2 flex-wrap">
+                            <a href="{% url 'editar_paciente' item.id %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                            <a href="{% url 'excluir_paciente' item.id %}" class="btn btn-sm btn-outline-danger">Excluir</a>
                         </td>
                     </tr>
                 {% empty %}
@@ -42,6 +48,8 @@
                 {% endfor %}
             </tbody>
         </table>
+        </div>
+        </div>
         </div>
     </article>
 </section>

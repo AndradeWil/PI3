@@ -1,16 +1,18 @@
 {% extends 'base.html' %}
 {% block title %}Confirmar exclusao{% endblock %}
 {% block content %}
-<section class="card card-narrow">
-    <h2>Confirmar exclusao</h2>
-    <p>Tem certeza que deseja excluir: <strong>{{ objeto }}</strong>?</p>
+<section class="card border-0 shadow-sm card-narrow">
+    <div class="card-body">
+    <h2 class="h4 mb-3">Confirmar exclusao</h2>
+    <p class="mb-3">Tem certeza que deseja excluir: <strong>{{ objeto }}</strong>?</p>
     {% if erro %}
-        <p class="danger-text">{{ erro }}</p>
+        <div class="alert alert-danger py-2" role="alert">{{ erro }}</div>
     {% endif %}
-    <form method="post" class="actions-row">
+    <form method="post" class="d-flex gap-2 align-items-center flex-wrap">
         {% csrf_token %}
-        <button type="submit" class="danger-solid">Excluir definitivamente</button>
-        <a href="{% url voltar_url %}">Cancelar</a>
+        <button type="submit" class="btn btn-danger">Excluir definitivamente</button>
+        <a href="{% url voltar_url %}" class="btn btn-outline-secondary">Cancelar</a>
     </form>
+    </div>
 </section>
 {% endblock %}
