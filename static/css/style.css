@@ -172,9 +172,9 @@ fieldset legend {
 .auth-wrap {
     min-height: calc(100vh - 80px);
     display: flex;
-    align-items: center;
+    align-items: start;
     justify-content: center;
-    padding: 2rem 1rem;
+    padding: 10rem 1rem;
 }
 .auth-card {
     width: 100%;
