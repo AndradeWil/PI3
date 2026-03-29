@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Confirmar exclusao{% endblock %}
+{% block content %}
+<section class="card card-narrow">
+    <h2>Confirmar exclusao</h2>
+    <p>Tem certeza que deseja excluir: <strong>{{ objeto }}</strong>?</p>
+    <form method="post" class="actions-row">
+        {% csrf_token %}
+        <button type="submit" class="danger-solid">Excluir definitivamente</button>
+        <a href="{% url voltar_url %}">Cancelar</a>
+    </form>
+</section>
+{% endblock %}

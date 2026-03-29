@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Pacientes | Controle Fisio{% endblock %}
+{% block content %}
+<section class="layout-split">
+    <article class="card">
+        <h2>Novo paciente</h2>
+        <form method="post" class="form-grid">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Salvar paciente</button>
+        </form>
+    </article>
+    <article class="card">
+        <h2>Pacientes cadastrados</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Idade</th>
+                    <th>Contato</th>
+                    <th>Frequencia</th>
+                    <th>Empresa</th>
+                    <th>Acoes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in itens %}
+                    <tr>
+                        <td>{{ item.nome }}</td>
+                        <td>{{ item.idade|default:'-' }}</td>
+                        <td>{{ item.telefone|default:item.email|default:'-' }}</td>
+                        <td>{{ item.frequencia_por_dia }}x/dia</td>
+                        <td>{{ item.empresa|default:'Particular' }}</td>
+                        <td class="actions">
+                            <a href="{% url 'editar_paciente' item.id %}">Editar</a>
+                            <a href="{% url 'excluir_paciente' item.id %}" class="danger">Excluir</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6">Nenhum paciente cadastrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+</section>
+{% endblock %}

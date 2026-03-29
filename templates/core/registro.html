@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Cadastro | Controle Fisio{% endblock %}
+{% block content %}
+<section class="card">
+    <h2>Cadastro de fisioterapeuta</h2>
+    <form method="post" class="form-grid two-cols">
+        {% csrf_token %}
+        <fieldset>
+            <legend>Dados de acesso</legend>
+            {{ user_form.as_p }}
+        </fieldset>
+        <fieldset>
+            <legend>Dados profissionais</legend>
+            {{ perfil_form.as_p }}
+        </fieldset>
+        <button type="submit">Criar conta</button>
+    </form>
+</section>
+{% endblock %}

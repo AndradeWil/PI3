@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard | Controle Fisio{% endblock %}
+{% block content %}
+<section class="stats">
+    <article class="kpi"><h3>Pacientes</h3><p>{{ total_pacientes }}</p></article>
+    <article class="kpi"><h3>Atendimentos ativos</h3><p>{{ total_atendimentos }}</p></article>
+    <article class="kpi"><h3>Sessoes registradas</h3><p>{{ total_sessoes }}</p></article>
+    <article class="kpi"><h3>Faturamento no mes</h3><p>R$ {{ total_mes }}</p></article>
+</section>
+
+<section class="card">
+    <h2>Ultimas sessoes</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Paciente</th>
+                <th>Data</th>
+                <th>Duracao</th>
+                <th>Valor</th>
+                <th>Compareceu</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sessao in ultimas_sessoes %}
+                <tr>
+                    <td>{{ sessao.atendimento.paciente.nome }}</td>
+                    <td>{{ sessao.data_hora|date:'d/m/Y H:i' }}</td>
+                    <td>{{ sessao.duracao_minutos }} min</td>
+                    <td>R$ {{ sessao.valor_sessao }}</td>
+                    <td>{% if sessao.compareceu %}Sim{% else %}Nao{% endif %}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="5">Nenhuma sessao registrada.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

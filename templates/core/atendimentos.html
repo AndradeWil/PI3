@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Atendimentos | Controle Fisio{% endblock %}
+{% block content %}
+<section class="layout-split">
+    <article class="card">
+        <h2>Novo atendimento</h2>
+        <form method="post" class="form-grid">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Salvar atendimento</button>
+        </form>
+    </article>
+    <article class="card">
+        <h2>Atendimentos cadastrados</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Paciente</th>
+                    <th>Empresa</th>
+                    <th>Tipo</th>
+                    <th>Valor</th>
+                    <th>Ponto</th>
+                    <th>Acoes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in itens %}
+                    <tr>
+                        <td>{{ item.paciente.nome }}</td>
+                        <td>{{ item.empresa|default:'Particular' }}</td>
+                        <td>{{ item.tipo_atendimento.nome }}</td>
+                        <td>R$ {{ item.valor_por_sessao }}</td>
+                        <td>
+                            <form method="post" action="{% url 'bater_ponto' item.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-inline">Bater ponto</button>
+                            </form>
+                        </td>
+                        <td class="actions">
+                            <a href="{% url 'editar_atendimento' item.id %}">Editar</a>
+                            <a href="{% url 'excluir_atendimento' item.id %}" class="danger">Excluir</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6">Nenhum atendimento cadastrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+</section>
+{% endblock %}

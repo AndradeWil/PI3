@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block content %}
+<section class="card card-narrow">
+    <h2>{{ titulo }}</h2>
+    <form method="post" class="form-grid">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="actions-row">
+            <button type="submit">Salvar alteracoes</button>
+            <a href="javascript:history.back()">Cancelar</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

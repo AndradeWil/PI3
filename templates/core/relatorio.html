@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Relatorios | Controle Fisio{% endblock %}
+{% block content %}
+<section class="card">
+    <h2>Relatorio de atendimentos por periodo</h2>
+    <form method="get" class="filter-row">
+        {{ form.as_p }}
+        <button type="submit">Filtrar</button>
+        <a href="{% url 'exportar_relatorio_pdf' %}?data_inicio={{ request.GET.data_inicio }}&data_fim={{ request.GET.data_fim }}" class="btn-inline">Exportar PDF</a>
+    </form>
+</section>
+
+<section class="stats stats-3">
+    <article class="kpi"><h3>Total de sessoes</h3><p>{{ total_sessoes }}</p></article>
+    <article class="kpi"><h3>Total de horas</h3><p>{{ total_horas }}</p></article>
+    <article class="kpi"><h3>Total financeiro</h3><p>R$ {{ total_valor }}</p></article>
+</section>
+
+<section class="card">
+    <h2>Detalhamento</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Paciente</th>
+                <th>Empresa</th>
+                <th>Tipo</th>
+                <th>Duracao</th>
+                <th>Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in sessoes %}
+                <tr>
+                    <td>{{ item.data_hora|date:'d/m/Y H:i' }}</td>
+                    <td>{{ item.atendimento.paciente.nome }}</td>
+                    <td>{{ item.atendimento.empresa|default:'Particular' }}</td>
+                    <td>{{ item.atendimento.tipo_atendimento.nome }}</td>
+                    <td>{{ item.duracao_minutos }} min</td>
+                    <td>R$ {{ item.valor_sessao }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="6">Nenhum registro no periodo.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}{{ titulo }} | Controle Fisio{% endblock %}
+{% block content %}
+<section class="layout-split">
+    <article class="card">
+        <h2>Novo registro - {{ titulo }}</h2>
+        <form method="post" class="form-grid">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Salvar</button>
+        </form>
+    </article>
+    <article class="card">
+        <h2>Lista de {{ titulo }}</h2>
+        <ul class="list-clean">
+            {% for item in itens %}
+                <li>{{ item }}</li>
+            {% empty %}
+                <li>Nenhum registro cadastrado.</li>
+            {% endfor %}
+        </ul>
+    </article>
+</section>
+{% endblock %}

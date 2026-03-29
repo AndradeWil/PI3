@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Sessoes | Controle Fisio{% endblock %}
+{% block content %}
+<section class="layout-split">
+    <article class="card">
+        <h2>Registrar sessao/atendimento</h2>
+        <form method="post" class="form-grid">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Registrar sessao</button>
+        </form>
+    </article>
+    <article class="card">
+        <h2>Historico</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Paciente</th>
+                    <th>Data</th>
+                    <th>Duracao</th>
+                    <th>Valor</th>
+                    <th>Presenca</th>
+                    <th>Acoes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in itens %}
+                    <tr>
+                        <td>{{ item.atendimento.paciente.nome }}</td>
+                        <td>{{ item.data_hora|date:'d/m/Y H:i' }}</td>
+                        <td>{{ item.duracao_minutos }} min</td>
+                        <td>R$ {{ item.valor_sessao }}</td>
+                        <td>{% if item.compareceu %}Atendido{% else %}Nao compareceu{% endif %}</td>
+                        <td class="actions">
+                            <a href="{% url 'editar_sessao' item.id %}">Editar</a>
+                            <a href="{% url 'excluir_sessao' item.id %}" class="danger">Excluir</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6">Sem registros.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+</section>
+{% endblock %}

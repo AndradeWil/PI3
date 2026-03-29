@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Painel Financeiro | Controle Fisio{% endblock %}
+{% block content %}
+<section class="card">
+    <h2>Painel financeiro</h2>
+    <form method="get" class="filter-row">
+        {{ form.as_p }}
+        <button type="submit">Atualizar</button>
+    </form>
+</section>
+
+<section class="stats stats-1">
+    <article class="kpi"><h3>Total geral no periodo</h3><p>R$ {{ total_geral }}</p></article>
+</section>
+
+<section class="layout-split">
+    <article class="card">
+        <h2>Totais por empresa</h2>
+        <table>
+            <thead>
+                <tr><th>Empresa</th><th>Total</th></tr>
+            </thead>
+            <tbody>
+                {% for nome, valor in resumo_empresa %}
+                    <tr><td>{{ nome }}</td><td>R$ {{ valor }}</td></tr>
+                {% empty %}
+                    <tr><td colspan="2">Sem dados no periodo.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+    <article class="card">
+        <h2>Totais por tipo de atendimento</h2>
+        <table>
+            <thead>
+                <tr><th>Tipo</th><th>Total</th></tr>
+            </thead>
+            <tbody>
+                {% for nome, valor in resumo_tipo %}
+                    <tr><td>{{ nome }}</td><td>R$ {{ valor }}</td></tr>
+                {% empty %}
+                    <tr><td colspan="2">Sem dados no periodo.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+</section>
+{% endblock %}
