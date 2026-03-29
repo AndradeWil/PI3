@@ -3,24 +3,44 @@
 {% block content %}
 <section class="row g-3 mb-4">
     <article class="col-12 col-sm-6 col-xl-3">
-        <div class="card h-100 border-0 shadow-sm bg-info-subtle"><div class="card-body"><h3 class="h6 text-secondary mb-2">Pacientes</h3><p class="display-6 fw-bold text-primary mb-0">{{ total_pacientes }}</p></div></div>
+        <div class="card h-100 border-0 shadow-sm kpi-stat">
+            <div class="card-body py-3">
+                <p class="kpi-label mb-2">Pacientes</p>
+                <p class="kpi-value mb-0">{{ total_pacientes }}</p>
+            </div>
+        </div>
     </article>
     <article class="col-12 col-sm-6 col-xl-3">
-        <div class="card h-100 border-0 shadow-sm bg-light"><div class="card-body"><h3 class="h6 text-secondary mb-2">Atendimentos ativos</h3><p class="display-6 fw-bold text-primary mb-0">{{ total_atendimentos }}</p></div></div>
+        <div class="card h-100 border-0 shadow-sm kpi-stat">
+            <div class="card-body py-3">
+                <p class="kpi-label mb-2">Atendimentos ativos</p>
+                <p class="kpi-value mb-0">{{ total_atendimentos }}</p>
+            </div>
+        </div>
     </article>
     <article class="col-12 col-sm-6 col-xl-3">
-        <div class="card h-100 border-0 shadow-sm bg-light"><div class="card-body"><h3 class="h6 text-secondary mb-2">Sessões registradas</h3><p class="display-6 fw-bold text-primary mb-0">{{ total_sessoes }}</p></div></div>
+        <div class="card h-100 border-0 shadow-sm kpi-stat">
+            <div class="card-body py-3">
+                <p class="kpi-label mb-2">Sessões registradas</p>
+                <p class="kpi-value mb-0">{{ total_sessoes }}</p>
+            </div>
+        </div>
     </article>
     <article class="col-12 col-sm-6 col-xl-3">
-        <div class="card h-100 border-0 shadow-sm bg-warning-subtle"><div class="card-body"><h3 class="h6 text-secondary mb-2">Faturamento no mês</h3><p class="display-6 fw-bold text-primary mb-0">R$ {{ total_mes }}</p></div></div>
+        <div class="card h-100 border-0 shadow-sm kpi-stat kpi-amber">
+            <div class="card-body py-3">
+                <p class="kpi-label mb-2">Faturamento no mês</p>
+                <p class="kpi-value mb-0">R$ {{ total_mes }}</p>
+            </div>
+        </div>
     </article>
 </section>
 
 <section class="card border-0 shadow-sm">
     <div class="card-body">
-    <h2 class="h4 mb-3">Últimas sessões</h2>
+    <h2 class="h4">Últimas sessões</h2>
     <div class="table-responsive">
-    <table class="table table-hover table-striped align-middle mb-0">
+    <table class="table table-hover align-middle mb-0">
         <thead>
             <tr>
                 <th>Paciente</th>
@@ -37,10 +57,16 @@
                     <td>{{ sessao.data_hora|date:'d/m/Y H:i' }}</td>
                     <td>{{ sessao.duracao_minutos }} min</td>
                     <td>R$ {{ sessao.valor_sessao }}</td>
-                    <td>{% if sessao.compareceu %}Sim{% else %}Não{% endif %}</td>
+                    <td>
+                        {% if sessao.compareceu %}
+                            <span class="badge text-bg-primary">Sim</span>
+                        {% else %}
+                            <span class="badge text-bg-secondary">Não</span>
+                        {% endif %}
+                    </td>
                 </tr>
             {% empty %}
-                <tr><td colspan="5">Nenhuma sessão registrada.</td></tr>
+                <tr class="empty-state"><td colspan="5">Nenhuma sessão registrada.</td></tr>
             {% endfor %}
         </tbody>
     </table>

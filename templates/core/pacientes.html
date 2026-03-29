@@ -5,7 +5,8 @@
     <article class="col-12 col-xl-5">
         <div class="card border-0 shadow-sm">
         <div class="card-body">
-        <h2 class="h4 mb-3">Novo paciente</h2>
+        <h2 class="h4 mb-2">Novo paciente</h2>
+        <p class="section-desc">Preencha os dados e clique em salvar para registrar um novo paciente.</p>
         <form method="post" class="form-grid">
             {% csrf_token %}
             {{ form.as_p }}
@@ -17,7 +18,8 @@
     <article class="col-12 col-xl-7">
         <div class="card border-0 shadow-sm">
         <div class="card-body">
-        <h2 class="h4 mb-3">Pacientes cadastrados</h2>
+        <h2 class="h4 mb-2">Pacientes cadastrados</h2>
+        <p class="section-desc">Gerencie os pacientes vinculados à sua conta.</p>
         <div class="table-responsive">
         <table class="table table-hover table-striped align-middle mb-0">
             <thead>
@@ -44,7 +46,7 @@
                         </td>
                     </tr>
                 {% empty %}
-                    <tr><td colspan="6">Nenhum paciente cadastrado.</td></tr>
+                    <tr class="empty-state"><td colspan="6">Nenhum paciente cadastrado ainda.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

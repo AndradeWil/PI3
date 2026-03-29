@@ -3,7 +3,8 @@
 {% block content %}
 <section class="card border-0 shadow-sm mb-4">
     <div class="card-body">
-    <h2 class="h4 mb-3">Relatório de atendimentos por período</h2>
+    <h2 class="h4 mb-2">Relatório de atendimentos por período</h2>
+    <p class="section-desc">Filtre as sessões por data de início e fim para gerar o relatório e exportá-lo em PDF.</p>
     <form method="get" class="filter-row">
         {{ form.as_p }}
         <button type="submit" class="btn btn-primary">Filtrar</button>
@@ -13,9 +14,30 @@
 </section>
 
 <section class="row g-3 mb-4">
-    <article class="col-12 col-md-4"><div class="card h-100 border-0 shadow-sm"><div class="card-body"><h3 class="h6 text-secondary mb-2">Total de sessões</h3><p class="display-6 fw-bold text-primary mb-0">{{ total_sessoes }}</p></div></div></article>
-    <article class="col-12 col-md-4"><div class="card h-100 border-0 shadow-sm"><div class="card-body"><h3 class="h6 text-secondary mb-2">Total de horas</h3><p class="display-6 fw-bold text-primary mb-0">{{ total_horas }}</p></div></div></article>
-    <article class="col-12 col-md-4"><div class="card h-100 border-0 shadow-sm bg-warning-subtle"><div class="card-body"><h3 class="h6 text-secondary mb-2">Total financeiro</h3><p class="display-6 fw-bold text-primary mb-0">R$ {{ total_valor }}</p></div></div></article>
+    <article class="col-12 col-md-4">
+        <div class="card h-100 border-0 shadow-sm kpi-stat">
+            <div class="card-body">
+                <p class="kpi-label mb-2">Total de sessões</p>
+                <p class="kpi-value mb-0">{{ total_sessoes }}</p>
+            </div>
+        </div>
+    </article>
+    <article class="col-12 col-md-4">
+        <div class="card h-100 border-0 shadow-sm kpi-stat">
+            <div class="card-body">
+                <p class="kpi-label mb-2">Total de horas</p>
+                <p class="kpi-value mb-0">{{ total_horas }}</p>
+            </div>
+        </div>
+    </article>
+    <article class="col-12 col-md-4">
+        <div class="card h-100 border-0 shadow-sm kpi-stat kpi-amber">
+            <div class="card-body">
+                <p class="kpi-label mb-2">Total financeiro</p>
+                <p class="kpi-value mb-0">R$ {{ total_valor }}</p>
+            </div>
+        </div>
+    </article>
 </section>
 
 <section class="card border-0 shadow-sm">
@@ -44,7 +66,7 @@
                     <td>R$ {{ item.valor_sessao }}</td>
                 </tr>
             {% empty %}
-                <tr><td colspan="6">Nenhum registro no período.</td></tr>
+                <tr class="empty-state"><td colspan="6">Nenhum registro encontrado no período selecionado.</td></tr>
             {% endfor %}
         </tbody>
     </table>

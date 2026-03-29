@@ -3,7 +3,8 @@
 {% block content %}
 <section class="card border-0 shadow-sm mb-4">
     <div class="card-body">
-    <h2 class="h4 mb-3">Painel financeiro</h2>
+    <h2 class="h4 mb-2">Painel financeiro</h2>
+    <p class="section-desc">Visualize o resumo financeiro por empresa e tipo de atendimento no período selecionado.</p>
     <form method="get" class="filter-row">
         {{ form.as_p }}
         <button type="submit" class="btn btn-primary">Atualizar</button>
@@ -13,10 +14,10 @@
 
 <section class="row g-3 mb-4">
     <article class="col-12">
-        <div class="card border-0 shadow-sm bg-warning-subtle">
+        <div class="card border-0 shadow-sm kpi-stat kpi-amber">
             <div class="card-body">
-                <h3 class="h6 text-secondary mb-2">Total geral no período</h3>
-                <p class="display-6 fw-bold text-primary mb-0">R$ {{ total_geral }}</p>
+                <p class="kpi-label mb-2">Total geral no período</p>
+                <p class="kpi-value mb-0">R$ {{ total_geral }}</p>
             </div>
         </div>
     </article>
@@ -26,7 +27,7 @@
     <article class="col-12 col-xl-6">
         <div class="card border-0 shadow-sm">
         <div class="card-body">
-        <h2 class="h4 mb-3">Totais por empresa</h2>
+        <h2 class="h4 mb-2">Totais por empresa</h2>
         <div class="table-responsive">
         <table class="table table-hover table-striped align-middle mb-0">
             <thead>
@@ -36,7 +37,7 @@
                 {% for nome, valor in resumo_empresa %}
                     <tr><td>{{ nome }}</td><td>R$ {{ valor }}</td></tr>
                 {% empty %}
-                    <tr><td colspan="2">Sem dados no período.</td></tr>
+                    <tr class="empty-state"><td colspan="2">Sem dados no período.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -47,7 +48,7 @@
     <article class="col-12 col-xl-6">
         <div class="card border-0 shadow-sm">
         <div class="card-body">
-        <h2 class="h4 mb-3">Totais por tipo de atendimento</h2>
+        <h2 class="h4 mb-2">Totais por tipo de atendimento</h2>
         <div class="table-responsive">
         <table class="table table-hover table-striped align-middle mb-0">
             <thead>
@@ -57,7 +58,7 @@
                 {% for nome, valor in resumo_tipo %}
                     <tr><td>{{ nome }}</td><td>R$ {{ valor }}</td></tr>
                 {% empty %}
-                    <tr><td colspan="2">Sem dados no período.</td></tr>
+                    <tr class="empty-state"><td colspan="2">Sem dados no período.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

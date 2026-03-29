@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
 {% block title %}Cadastro | Controle Fisio{% endblock %}
 {% block content %}
-<section class="card border-0 shadow-sm">
+<section class="card border-0 shadow-sm card-narrow">
     <div class="card-body">
-    <h2 class="h4 mb-3">Cadastro de fisioterapeuta</h2>
+    <h2 class="h4">Cadastro de fisioterapeuta</h2>
+    <p class="section-desc">Preencha os dados abaixo para criar sua conta e começar a gerenciar seus atendimentos.</p>
     <form method="post" class="row g-3">
         {% csrf_token %}
         <fieldset class="col-12 col-lg-6">

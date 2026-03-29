@@ -5,7 +5,8 @@
     <article class="col-12 col-xl-5">
         <div class="card border-0 shadow-sm">
         <div class="card-body">
-        <h2 class="h4 mb-3">Registrar sessão/atendimento</h2>
+        <h2 class="h4 mb-2">Registrar sessão</h2>
+        <p class="section-desc">Registre cada sessão realizada com data, duração e status de presença.</p>
         <form method="post" class="form-grid">
             {% csrf_token %}
             {{ form.as_p }}
@@ -17,7 +18,8 @@
     <article class="col-12 col-xl-7">
         <div class="card border-0 shadow-sm">
         <div class="card-body">
-        <h2 class="h4 mb-3">Histórico</h2>
+        <h2 class="h4 mb-2">Histórico de sessões</h2>
+        <p class="section-desc">Acompanhe todas as sessões realizadas e o status de frequência dos pacientes.</p>
         <div class="table-responsive">
         <table class="table table-hover table-striped align-middle mb-0">
             <thead>
@@ -50,7 +52,7 @@
                         </td>
                     </tr>
                 {% empty %}
-                    <tr><td colspan="6">Sem registros.</td></tr>
+                    <tr class="empty-state"><td colspan="6">Nenhuma sessão registrada ainda.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

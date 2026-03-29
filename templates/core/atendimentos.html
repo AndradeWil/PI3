@@ -5,7 +5,8 @@
     <article class="col-12 col-xl-5">
         <div class="card border-0 shadow-sm">
         <div class="card-body">
-        <h2 class="h4 mb-3">Novo atendimento</h2>
+        <h2 class="h4 mb-2">Novo atendimento</h2>
+        <p class="section-desc">Vincule um paciente, tipo e empresa para criar o plano de atendimento.</p>
         <form method="post" class="form-grid">
             {% csrf_token %}
             {{ form.as_p }}
@@ -17,7 +18,8 @@
     <article class="col-12 col-xl-7">
         <div class="card border-0 shadow-sm">
         <div class="card-body">
-        <h2 class="h4 mb-3">Atendimentos cadastrados</h2>
+        <h2 class="h4 mb-2">Atendimentos cadastrados</h2>
+        <p class="section-desc">Lista de todos os planos de atendimento ativos.</p>
         <div class="table-responsive">
         <table class="table table-hover table-striped align-middle mb-0">
             <thead>
@@ -49,7 +51,7 @@
                         </td>
                     </tr>
                 {% empty %}
-                    <tr><td colspan="6">Nenhum atendimento cadastrado.</td></tr>
+                    <tr class="empty-state"><td colspan="6">Nenhum atendimento cadastrado ainda.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
