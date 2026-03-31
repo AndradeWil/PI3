@@ -150,3 +150,60 @@ PI3/
 - Este projeto está configurado para ambiente de desenvolvimento (`DEBUG = True`).
 - O banco SQLite local fica em `db.sqlite3`.
 - O idioma está configurado para Português (Brasil) e fuso horário `America/Sao_Paulo`.
+
+## Testes automatizados
+
+### Ferramenta utilizada
+
+- Django Test Framework (baseado em `unittest`), via `django.test.TestCase`.
+
+### O que é coberto
+
+- Modelos: relacionamentos, `__str__`, integridade e regras de unicidade.
+- Formulários: filtragem de campos por fisioterapeuta logado.
+- Views: autenticação, dashboard, CRUDs principais, bater ponto, relatório, exportação em PDF e painel financeiro.
+
+### Passo a passo para executar os testes
+
+1. Ative o ambiente virtual.
+
+Windows (PowerShell):
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Linux/macOS:
+
+```bash
+source .venv/bin/activate
+```
+
+2. Garanta as dependências instaladas:
+
+```bash
+pip install -r requirements.txt
+```
+
+3. Execute a suíte completa:
+
+```bash
+python manage.py test
+```
+
+4. (Opcional) Execute apenas os testes do app principal:
+
+```bash
+python manage.py test core
+```
+
+5. (Opcional) Execute uma classe específica de testes:
+
+```bash
+python manage.py test core.tests.ViewTests
+```
+
+### Resultado esperado
+
+- O Django cria um banco temporário de testes, executa os cenários e remove esse banco ao final.
+- Em caso de sucesso, o terminal exibirá `OK` com a quantidade de testes executados.
