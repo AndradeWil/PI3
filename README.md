@@ -37,6 +37,7 @@ O cliente Flutter está em [mobile/](mobile/) e utiliza por padrão a API public
 - `GET, POST /api/v1/pacientes/`: lista paginada, busca e cadastro de pacientes.
 - `GET, PATCH /api/v1/pacientes/{id}/`: consulta e edição de paciente.
 - `GET /api/v1/sessoes/?data=AAAA-MM-DD`: agenda diária do fisioterapeuta.
+- `PATCH, DELETE /api/v1/sessoes/{id}/`: marca atendimento realizado ou exclui a sessão.
 - `GET /api/v1/atendimentos/ativos/`: atendimentos disponíveis para registro rápido.
 - `GET, POST /api/v1/atendimentos/`: lista e cadastro de atendimentos.
 - `GET, PATCH /api/v1/atendimentos/{id}/`: detalhe e edição de atendimento.

@@ -12,6 +12,7 @@ ao Android e preparado para iOS.
 - shell responsivo com barra inferior e `NavigationRail`;
 - login JWT com refresh e armazenamento seguro de tokens;
 - dashboard operacional conectado a API de producao;
+- saudacao do Dashboard com o nome do fisioterapeuta autenticado;
 - restauracao de sessao e logout com blacklist do refresh token;
 - lista, busca, detalhe, cadastro e edicao de pacientes;
 - lista, detalhe, cadastro, edicao e ativacao de atendimentos;
@@ -19,7 +20,8 @@ ao Android e preparado para iOS.
 - painel financeiro por periodo com KPIs e graficos por empresa e tipo;
 - relatorio por periodo com resumo, sessoes e exportacao PDF autenticada;
 - agenda diaria com selecao de data e acesso rapido ao paciente;
-- registro rapido de sessao com selecao do atendimento e protecao contra duplicidade;
+- registro rapido de sessao pelo Dashboard ou Agenda, com selecao do atendimento e protecao contra duplicidade;
+- confirmacao de atendimento realizado e exclusao diretamente nos cards do Dashboard e Agenda;
 - projetos nativos Android e iOS.
 
 A URL padrao da API e `https://physiomanage.onrender.com/api/v1`. Outro ambiente

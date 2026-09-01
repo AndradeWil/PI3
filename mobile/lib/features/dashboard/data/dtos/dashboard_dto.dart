@@ -56,6 +56,7 @@ class DashboardDto {
 
 class SessionDto {
   const SessionDto({
+    required this.id,
     required this.time,
     required this.patientName,
     required this.location,
@@ -64,6 +65,7 @@ class SessionDto {
 
   factory SessionDto.fromJson(Map<String, dynamic> json) {
     return SessionDto(
+      id: json['id'] as int,
       time: json['time'] as String? ?? '--:--',
       patientName: json['patient_name'] as String? ?? 'Paciente',
       location: json['location'] as String? ?? '',
@@ -71,6 +73,7 @@ class SessionDto {
     );
   }
 
+  final int id;
   final String time;
   final String patientName;
   final String location;
@@ -78,6 +81,7 @@ class SessionDto {
 
   ScheduledSession toDomain(SessionStatus defaultStatus) {
     return ScheduledSession(
+      id: id,
       time: time,
       patientName: patientName,
       location: location.isEmpty ? 'Endereco nao informado' : location,

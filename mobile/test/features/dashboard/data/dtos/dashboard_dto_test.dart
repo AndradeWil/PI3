@@ -11,6 +11,7 @@ void main() {
       'next_session': null,
       'today_agenda': [
         {
+          'id': 9,
           'time': '14:30',
           'patient_name': 'Maria Silva',
           'location': '',

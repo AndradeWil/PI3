@@ -1,26 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../auth/application/auth_providers.dart';
+import '../../../schedule/application/schedule_providers.dart';
+import '../../../schedule/presentation/widgets/quick_session_sheet.dart';
+import '../../../schedule/presentation/widgets/session_action_bar.dart';
 import '../../application/dashboard_providers.dart';
 import '../../domain/entities/dashboard_summary.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
 
+  Future<void> registerSession(BuildContext context, WidgetRef ref) async {
+    final registered = await showQuickSessionSheet(context);
+    if (!registered || !context.mounted) return;
+    ref.invalidate(dashboardSummaryProvider);
+    ref.invalidate(activeAppointmentsProvider);
+    ref.invalidate(scheduleProvider);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Sessao registrada com sucesso.')),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final summary = ref.watch(dashboardSummaryProvider);
+    final profile = ref.watch(therapistProfileProvider);
 
     return RefreshIndicator(
       onRefresh: () => ref.refresh(dashboardSummaryProvider.future),
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
-          const SliverAppBar(
+          SliverAppBar(
             pinned: true,
             toolbarHeight: 72,
-            title: _Header(),
-            actions: [
+            title: _Header(name: profile.value?.displayName),
+            actions: const [
               IconButton(
                 onPressed: null,
                 tooltip: 'Notificacoes',
@@ -36,7 +53,10 @@ class DashboardPage extends ConsumerWidget {
             data: (data) => SliverPadding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
               sliver: SliverToBoxAdapter(
-                child: _DashboardContent(summary: data),
+                child: _DashboardContent(
+                  summary: data,
+                  onRegisterSession: () => registerSession(context, ref),
+                ),
               ),
             ),
             loading: () => const SliverFillRemaining(
@@ -55,7 +75,9 @@ class DashboardPage extends ConsumerWidget {
 }
 
 class _Header extends StatelessWidget {
-  const _Header();
+  const _Header({required this.name});
+
+  final String? name;
 
   @override
   Widget build(BuildContext context) {
@@ -72,23 +94,42 @@ class _Header extends StatelessWidget {
           child: const Icon(Icons.accessibility_new, color: Colors.white),
         ),
         const SizedBox(width: 12),
-        const Column(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('PhysioManage', style: TextStyle(fontWeight: FontWeight.w700)),
-            Text('Bom dia, Ana', style: TextStyle(fontSize: 13)),
+            const Text(
+              'PhysioManage',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+            Text(
+              name == null ? 'Ola' : '${_greeting()}, $name',
+              style: const TextStyle(fontSize: 13),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ],
         ),
       ],
     );
   }
+
+  String _greeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Bom dia';
+    if (hour < 18) return 'Boa tarde';
+    return 'Boa noite';
+  }
 }
 
 class _DashboardContent extends StatelessWidget {
-  const _DashboardContent({required this.summary});
+  const _DashboardContent({
+    required this.summary,
+    required this.onRegisterSession,
+  });
 
   final DashboardSummary summary;
+  final VoidCallback onRegisterSession;
 
   @override
   Widget build(BuildContext context) {
@@ -99,6 +140,12 @@ class _DashboardContent extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _RevenuePanel(revenue: summary.monthlyRevenue),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: onRegisterSession,
+              icon: const Icon(Icons.punch_clock_outlined),
+              label: const Text('Registrar sessao agora'),
+            ),
             const SizedBox(height: 16),
             LayoutBuilder(
               builder: (context, constraints) {
@@ -150,7 +197,10 @@ class _DashboardContent extends StatelessWidget {
                   'Agenda de hoje',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
-                TextButton(onPressed: () {}, child: const Text('Ver agenda')),
+                TextButton(
+                  onPressed: () => context.go('/agenda'),
+                  child: const Text('Ver agenda'),
+                ),
               ],
             ),
             if (summary.todayAgenda.isEmpty)
@@ -285,27 +335,32 @@ class _NextSessionCard extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _TimeBadge(time: session.time),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    session.patientName,
-                    style: Theme.of(context).textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w700),
+            Row(
+              children: [
+                _TimeBadge(time: session.time),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        session.patientName,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      Text(session.location),
+                    ],
                   ),
-                  Text(session.location),
-                ],
-              ),
+                ),
+              ],
             ),
-            IconButton.filledTonal(
-              onPressed: () {},
-              tooltip: 'Abrir rota',
-              icon: const Icon(Icons.directions_outlined),
+            const SizedBox(height: 14),
+            SessionActionBar(
+              sessionId: session.id,
+              attended: session.status == SessionStatus.confirmed,
             ),
           ],
         ),
@@ -325,19 +380,18 @@ class _AgendaItem extends StatelessWidget {
       minVerticalPadding: 12,
       leading: _TimeBadge(time: session.time),
       title: Text(session.patientName, overflow: TextOverflow.ellipsis),
-      subtitle: Text(session.location),
-      trailing: session.status == SessionStatus.next
-          ? FilledButton.tonalIcon(
-              onPressed: () {},
-              icon: const Icon(Icons.check_circle_outline),
-              label: const Text('Registrar'),
-            )
-          : Icon(
-              session.status == SessionStatus.confirmed
-                  ? Icons.check_circle_outline
-                  : Icons.schedule_outlined,
-              color: Theme.of(context).colorScheme.primary,
-            ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(session.location),
+          const SizedBox(height: 8),
+          SessionActionBar(
+            sessionId: session.id,
+            attended: session.status == SessionStatus.confirmed,
+          ),
+        ],
+      ),
+      isThreeLine: true,
     );
   }
 }

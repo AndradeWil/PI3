@@ -2,7 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/network_providers.dart';
 import '../data/repositories/remote_auth_repository.dart';
+import '../data/repositories/remote_profile_repository.dart';
+import '../domain/entities/therapist_profile.dart';
 import '../domain/repositories/auth_repository.dart';
+import '../domain/repositories/profile_repository.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return RemoteAuthRepository(
@@ -13,6 +16,14 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 
 final sessionRestoreProvider = FutureProvider<bool>((ref) {
   return ref.watch(authRepositoryProvider).restoreSession();
+});
+
+final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
+  return RemoteProfileRepository(ref.watch(apiClientProvider));
+});
+
+final therapistProfileProvider = FutureProvider<TherapistProfile>((ref) {
+  return ref.watch(profileRepositoryProvider).getProfile();
 });
 
 final loginControllerProvider = AsyncNotifierProvider<LoginController, void>(
@@ -30,6 +41,9 @@ class LoginController extends AsyncNotifier<void> {
           .read(authRepositoryProvider)
           .login(username: username, password: password),
     );
+    if (!state.hasError) {
+      ref.invalidate(therapistProfileProvider);
+    }
     return !state.hasError;
   }
 }

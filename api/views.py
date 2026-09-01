@@ -31,6 +31,7 @@ from .serializers import (
     EmpresaOpcaoSerializer,
     PacienteSerializer,
     SessaoSerializer,
+    SessaoStatusSerializer,
     TipoAtendimentoOpcaoSerializer,
     TipoAtendimentoSerializer,
 )
@@ -87,6 +88,14 @@ class SessaoListView(ListAPIView):
         if selected_date is None:
             raise ValidationError({'data': ['Use o formato AAAA-MM-DD.']})
         return queryset.filter(data_hora__date=selected_date)
+
+
+class SessaoDetailView(RetrieveUpdateDestroyAPIView):
+    serializer_class = SessaoStatusSerializer
+
+    def get_queryset(self):
+        therapist = _fisioterapeuta_do_usuario(self.request.user)
+        return Sessao.objects.filter(atendimento__fisioterapeuta=therapist)
 
 
 class AtendimentoAtivoListView(ListAPIView):

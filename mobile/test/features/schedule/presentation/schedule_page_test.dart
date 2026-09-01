@@ -19,7 +19,7 @@ void main() {
           locale: Locale('pt', 'BR'),
           supportedLocales: [Locale('pt', 'BR')],
           localizationsDelegates: GlobalMaterialLocalizations.delegates,
-          home: SchedulePage(),
+          home: Scaffold(body: SchedulePage()),
         ),
       ),
     );
@@ -28,10 +28,63 @@ void main() {
     expect(find.text('Agenda'), findsWidgets);
     expect(find.text('Maria Silva'), findsOneWidget);
     expect(find.text('Fisioterapia motora'), findsOneWidget);
+    expect(find.text('Registrar sessao agora'), findsOneWidget);
+
+    await tester.tap(find.text('Registrar sessao agora'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Registrar sessao'), findsOneWidget);
+    expect(find.text('Nenhum atendimento ativo disponivel.'), findsOneWidget);
+  });
+
+  testWidgets('confirms attendance and deletion from the session card', (
+    tester,
+  ) async {
+    final repository = _ScheduleRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [scheduleRepositoryProvider.overrideWithValue(repository)],
+        child: const MaterialApp(
+          locale: Locale('pt', 'BR'),
+          supportedLocales: [Locale('pt', 'BR')],
+          localizationsDelegates: GlobalMaterialLocalizations.delegates,
+          home: Scaffold(body: SchedulePage()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Atendimento realizado'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Confirma que este atendimento foi realizado?'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Confirmar'));
+    await tester.pumpAndSettle();
+    expect(repository.markedSessionId, 1);
+
+    await tester.tap(find.text('Excluir'));
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('Esta acao nao pode ser desfeita'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Excluir').last);
+    await tester.pumpAndSettle();
+    expect(repository.deletedSessionId, 1);
   });
 }
 
 class _ScheduleRepository implements ScheduleRepository {
+  int? markedSessionId;
+  int? deletedSessionId;
+
+  @override
+  Future<void> deleteSession(int sessionId) async {
+    deletedSessionId = sessionId;
+  }
+
   @override
   Future<List<ActiveAppointment>> listActiveAppointments() async => const [];
 
@@ -52,6 +105,11 @@ class _ScheduleRepository implements ScheduleRepository {
         notes: '',
       ),
     ];
+  }
+
+  @override
+  Future<void> markAttended(int sessionId) async {
+    markedSessionId = sessionId;
   }
 
   @override

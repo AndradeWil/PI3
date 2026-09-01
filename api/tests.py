@@ -296,6 +296,33 @@ class SessaoApiTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_marks_owned_session_as_attended(self):
+        self.client.force_authenticate(self.user)
+        session = self.appointment.sessoes.first()
+        session.compareceu = False
+        session.save(update_fields=['compareceu'])
+
+        response = self.client.patch(
+            reverse('api_sessao_detail', args=[session.id]),
+            {'compareceu': True},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        session.refresh_from_db()
+        self.assertTrue(session.compareceu)
+
+    def test_deletes_owned_session_and_hides_foreign_session(self):
+        self.client.force_authenticate(self.user)
+        owned = self.appointment.sessoes.first()
+        foreign = self.other_appointment.sessoes.first()
+
+        deleted = self.client.delete(reverse('api_sessao_detail', args=[owned.id]))
+        hidden = self.client.delete(reverse('api_sessao_detail', args=[foreign.id]))
+
+        self.assertEqual(deleted.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Sessao.objects.filter(id=owned.id).exists())
+        self.assertEqual(hidden.status_code, status.HTTP_404_NOT_FOUND)
+
 
 class AtendimentoApiTests(APITestCase):
     def setUp(self):

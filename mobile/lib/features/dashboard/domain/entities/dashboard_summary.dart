@@ -18,12 +18,14 @@ class DashboardSummary {
 
 class ScheduledSession {
   const ScheduledSession({
+    required this.id,
     required this.time,
     required this.patientName,
     required this.location,
     required this.status,
   });
 
+  final int id;
   final String time;
   final String patientName;
   final String location;

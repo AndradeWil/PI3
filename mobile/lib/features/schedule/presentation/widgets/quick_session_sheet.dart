@@ -6,6 +6,16 @@ import '../../application/schedule_providers.dart';
 import '../../domain/entities/active_appointment.dart';
 import '../../domain/repositories/schedule_repository.dart';
 
+Future<bool> showQuickSessionSheet(BuildContext context) async {
+  return await showModalBottomSheet<bool>(
+        context: context,
+        isScrollControlled: true,
+        showDragHandle: true,
+        builder: (context) => const QuickSessionSheet(),
+      ) ??
+      false;
+}
+
 class QuickSessionSheet extends ConsumerStatefulWidget {
   const QuickSessionSheet({super.key});
 

@@ -53,6 +53,13 @@ class SessaoSerializer(serializers.ModelSerializer):
         )
 
 
+class SessaoStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Sessao
+        fields = ('id', 'compareceu')
+        read_only_fields = ('id',)
+
+
 class AtendimentoResumoSerializer(serializers.ModelSerializer):
     paciente_nome = serializers.CharField(source='paciente.nome', read_only=True)
     tipo_atendimento_nome = serializers.CharField(source='tipo_atendimento.nome', read_only=True)

@@ -7,6 +7,7 @@ import '../../../dashboard/application/dashboard_providers.dart';
 import '../../application/schedule_providers.dart';
 import '../../domain/entities/scheduled_session.dart';
 import '../widgets/quick_session_sheet.dart';
+import '../widgets/session_action_bar.dart';
 
 class SchedulePage extends ConsumerStatefulWidget {
   const SchedulePage({super.key});
@@ -36,13 +37,8 @@ class _SchedulePageState extends ConsumerState<SchedulePage> {
   }
 
   Future<void> registerSession() async {
-    final registered = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (context) => const QuickSessionSheet(),
-    );
-    if (registered != true || !mounted) return;
+    final registered = await showQuickSessionSheet(context);
+    if (!registered || !mounted) return;
     final today = _dateOnly(DateTime.now());
     setState(() => selectedDate = today);
     ref.invalidate(scheduleProvider(today));
@@ -86,6 +82,21 @@ class _SchedulePageState extends ConsumerState<SchedulePage> {
                       () => selectedDate = _dateOnly(DateTime.now()),
                     ),
                     onPick: pickDate,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            sliver: SliverToBoxAdapter(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 760),
+                  child: FilledButton.icon(
+                    onPressed: registerSession,
+                    icon: const Icon(Icons.punch_clock_outlined),
+                    label: const Text('Registrar sessao agora'),
                   ),
                 ),
               ),
@@ -201,66 +212,73 @@ class _SessionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     return Card(
-      child: InkWell(
-        onTap: () => context.push('/pacientes/${session.patientId}'),
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 56,
-                height: 48,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: colors.primaryContainer,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  DateFormat('HH:mm').format(session.dateTime),
-                  style: TextStyle(
-                    color: colors.onPrimaryContainer,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      session.patientName,
-                      style: Theme.of(context).textTheme.titleMedium,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            InkWell(
+              onTap: () => context.push('/pacientes/${session.patientId}'),
+              borderRadius: BorderRadius.circular(8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 56,
+                    height: 48,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: colors.primaryContainer,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    const SizedBox(height: 4),
-                    Text(session.serviceType),
-                    if (session.address.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        session.address,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall,
+                    child: Text(
+                      DateFormat('HH:mm').format(session.dateTime),
+                      style: TextStyle(
+                        color: colors.onPrimaryContainer,
+                        fontWeight: FontWeight.w700,
                       ),
-                    ],
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 4,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('${session.durationMinutes} min'),
-                        Text(session.value),
-                        Text(session.attended ? 'Realizada' : 'Agendada'),
+                        Text(
+                          session.patientName,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(session.serviceType),
+                        if (session.address.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            session.address,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 4,
+                          children: [
+                            Text('${session.durationMinutes} min'),
+                            Text(session.value),
+                            Text(session.attended ? 'Realizada' : 'Agendada'),
+                          ],
+                        ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                  const Icon(Icons.chevron_right),
+                ],
               ),
-              const Icon(Icons.chevron_right),
-            ],
-          ),
+            ),
+            const SizedBox(height: 14),
+            SessionActionBar(sessionId: session.id, attended: session.attended),
+          ],
         ),
       ),
     );

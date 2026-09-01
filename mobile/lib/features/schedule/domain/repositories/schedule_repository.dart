@@ -8,6 +8,8 @@ abstract interface class ScheduleRepository {
     int appointmentId,
     String idempotencyKey,
   );
+  Future<void> markAttended(int sessionId);
+  Future<void> deleteSession(int sessionId);
 }
 
 class ScheduleFailure implements Exception {

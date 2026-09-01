@@ -67,4 +67,25 @@ class RemoteScheduleRepository implements ScheduleRepository {
       throw const ScheduleFailure();
     }
   }
+
+  @override
+  Future<void> markAttended(int sessionId) async {
+    try {
+      await client.dio.patch<void>(
+        '/sessoes/$sessionId/',
+        data: {'compareceu': true},
+      );
+    } on DioException {
+      throw const ScheduleFailure();
+    }
+  }
+
+  @override
+  Future<void> deleteSession(int sessionId) async {
+    try {
+      await client.dio.delete<void>('/sessoes/$sessionId/');
+    } on DioException {
+      throw const ScheduleFailure();
+    }
+  }
 }
