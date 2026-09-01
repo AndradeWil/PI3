@@ -538,3 +538,25 @@ class FinanceiroApiTests(APITestCase):
 
         self.assertEqual(valid.status_code, status.HTTP_200_OK)
         self.assertEqual(invalid.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class RelatorioApiTests(FinanceiroApiTests):
+    def test_report_returns_summary_rows_and_isolation(self):
+        response = self.client.get(reverse('api_relatorio_sessoes'))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+        self.assertEqual(response.data['resumo']['total_valor'], '200.00')
+        self.assertEqual(response.data['resumo']['total_horas'], '1.50')
+        patient_names = [item['paciente_nome'] for item in response.data['results']]
+        self.assertCountEqual(patient_names, ['Joao', 'Maria'])
+
+    def test_pdf_requires_authentication_and_returns_document(self):
+        authenticated = self.client.get(reverse('api_relatorio_pdf'))
+        self.client.force_authenticate(user=None)
+        anonymous = self.client.get(reverse('api_relatorio_pdf'))
+
+        self.assertEqual(authenticated.status_code, status.HTTP_200_OK)
+        self.assertEqual(authenticated['Content-Type'], 'application/pdf')
+        self.assertTrue(authenticated.content.startswith(b'%PDF'))
+        self.assertEqual(anonymous.status_code, status.HTTP_401_UNAUTHORIZED)

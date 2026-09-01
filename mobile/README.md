@@ -17,6 +17,7 @@ ao Android e preparado para iOS.
 - lista, detalhe, cadastro, edicao e ativacao de atendimentos;
 - cadastro, edicao e exclusao de empresas e tipos de atendimento;
 - painel financeiro por periodo com KPIs e graficos por empresa e tipo;
+- relatorio por periodo com resumo, sessoes e exportacao PDF autenticada;
 - agenda diaria com selecao de data e acesso rapido ao paciente;
 - registro rapido de sessao com selecao do atendimento e protecao contra duplicidade;
 - projetos nativos Android e iOS.

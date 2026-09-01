@@ -12,6 +12,7 @@ import '../features/patients/presentation/pages/patient_detail_page.dart';
 import '../features/patients/presentation/pages/patient_form_page.dart';
 import '../features/patients/presentation/pages/patients_page.dart';
 import '../features/registries/presentation/pages/registries_page.dart';
+import '../features/reports/presentation/pages/reports_page.dart';
 import '../features/schedule/presentation/pages/schedule_page.dart';
 import 'shell/app_shell.dart';
 
@@ -23,6 +24,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/financeiro',
       builder: (context, state) => const FinancePage(),
+    ),
+    GoRoute(
+      path: '/relatorios',
+      builder: (context, state) => const ReportsPage(),
     ),
     GoRoute(
       path: '/cadastros',

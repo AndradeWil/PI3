@@ -2,6 +2,7 @@ import uuid
 from decimal import Decimal
 
 from django.db.models import ProtectedError, Sum
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.dateparse import parse_date
@@ -18,6 +19,8 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
 
 from core.models import Atendimento, Empresa, Fisioterapeuta, Paciente, Sessao, TipoAtendimento
 
@@ -319,7 +322,7 @@ class FinanceiroResumoView(APIView):
         return Response({
             'data_inicio': start.isoformat(),
             'data_fim': end.isoformat(),
-            'total_geral': str(total),
+            'total_geral': f'{total:.2f}',
             'total_sessoes': sessions.count(),
             'total_horas': str(round(Decimal(total_minutes) / Decimal('60'), 2)),
             'por_empresa': self._groups(by_company),
@@ -338,9 +341,88 @@ class FinanceiroResumoView(APIView):
     @staticmethod
     def _groups(values):
         return [
-            {'nome': name, 'valor': str(value)}
+            {'nome': name, 'valor': f'{value:.2f}'}
             for name, value in sorted(values.items(), key=lambda item: item[1], reverse=True)
         ]
+
+
+class RelatorioSessoesView(APIView):
+    def get(self, request):
+        therapist = _fisioterapeuta_do_usuario(request.user)
+        sessions, start, end = self._sessions(request, therapist)
+        total_value = sessions.aggregate(total=Sum('valor_sessao')).get('total') or Decimal('0')
+        total_minutes = sessions.aggregate(total=Sum('duracao_minutos')).get('total') or 0
+        paginator = ApiPagination()
+        page = paginator.paginate_queryset(sessions, request, view=self)
+        response = paginator.get_paginated_response(SessaoSerializer(page, many=True).data)
+        response.data['resumo'] = {
+            'data_inicio': start.isoformat(),
+            'data_fim': end.isoformat(),
+            'total_sessoes': sessions.count(),
+            'total_valor': f'{total_value:.2f}',
+            'total_horas': str(round(Decimal(total_minutes) / Decimal('60'), 2)),
+        }
+        return response
+
+    @staticmethod
+    def _sessions(request, therapist):
+        today = timezone.localdate()
+        start = FinanceiroResumoView._parse_date(
+            request.query_params.get('data_inicio'),
+            today.replace(day=1),
+        )
+        end = FinanceiroResumoView._parse_date(request.query_params.get('data_fim'), today)
+        if start > end:
+            raise ValidationError({'periodo': ['A data inicial deve ser anterior a data final.']})
+        sessions = Sessao.objects.filter(
+            atendimento__fisioterapeuta=therapist,
+            data_hora__date__gte=start,
+            data_hora__date__lte=end,
+        ).select_related(
+            'atendimento__paciente',
+            'atendimento__empresa',
+            'atendimento__tipo_atendimento',
+        ).order_by('-data_hora')
+        return sessions, start, end
+
+
+class RelatorioPdfView(APIView):
+    def get(self, request):
+        therapist = _fisioterapeuta_do_usuario(request.user)
+        sessions, start, end = RelatorioSessoesView._sessions(request, therapist)
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = (
+            f'attachment; filename="relatorio-{start.isoformat()}-{end.isoformat()}.pdf"'
+        )
+        pdf = canvas.Canvas(response, pagesize=A4)
+        _, height = A4
+        pdf.setTitle('Relatorio de Atendimentos')
+        pdf.setFont('Helvetica-Bold', 14)
+        pdf.drawString(40, height - 40, 'Relatorio de Atendimentos')
+        pdf.setFont('Helvetica', 9)
+        pdf.drawString(40, height - 58, f'Periodo: {start:%d/%m/%Y} a {end:%d/%m/%Y}')
+        pdf.drawString(40, height - 72, f'Profissional: {therapist}')
+        y = height - 98
+        total = Decimal('0')
+        for session in sessions:
+            if y < 48:
+                pdf.showPage()
+                pdf.setFont('Helvetica', 8)
+                y = height - 40
+            local_time = timezone.localtime(session.data_hora)
+            company = session.atendimento.empresa.nome if session.atendimento.empresa else 'Particular'
+            line = (
+                f'{local_time:%d/%m/%Y %H:%M} | '
+                f'{session.atendimento.paciente.nome[:24]} | '
+                f'{company[:18]} | R$ {session.valor_sessao}'
+            )
+            pdf.drawString(40, y, line)
+            total += session.valor_sessao
+            y -= 12
+        pdf.setFont('Helvetica-Bold', 10)
+        pdf.drawString(40, max(y - 10, 28), f'Total: {sessions.count()} sessoes | R$ {total}')
+        pdf.save()
+        return response
 
 
 class LogoutView(APIView):

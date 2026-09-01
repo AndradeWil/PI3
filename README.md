@@ -47,6 +47,8 @@ O cliente Flutter está em [mobile/](mobile/) e utiliza por padrão a API public
 - `GET, POST /api/v1/tipos-atendimento/`: lista e cadastro de tipos.
 - `GET, PATCH, DELETE /api/v1/tipos-atendimento/{id}/`: edição e exclusão protegida de tipo.
 - `GET /api/v1/financeiro/resumo/`: receita, sessões, horas e totais agrupados por período.
+- `GET /api/v1/relatorios/sessoes/`: sessões paginadas e totais por período.
+- `GET /api/v1/relatorios/sessoes/pdf/`: exportação PDF autenticada por período.
 
 As views HTML e a autenticação por sessão continuam disponíveis para a plataforma web.
 
