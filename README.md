@@ -21,6 +21,22 @@ Projeto acadêmico desenvolvido com Django para gerenciamento de pacientes, aten
 - Exportação de relatório em PDF
 - Painel financeiro por empresa e tipo de atendimento
 
+## Evolução mobile (PI4)
+
+Consulte [Arquitetura e Plano de Execução do PhysioManage Mobile](docs/ARQUITETURA_PHYSIOMANAGE_MOBILE.md) para a arquitetura Flutter, estratégia de integração, módulo de Inteligência de Dados, roadmap, backlog e plano de testes.
+
+O cliente Flutter está em [mobile/](mobile/) e utiliza por padrão a API publicada em `https://physiomanage.onrender.com/api/v1`.
+
+### API mobile v1
+
+- `POST /api/v1/auth/token/`: login e emissão de JWT.
+- `POST /api/v1/auth/token/refresh/`: renovação e rotação do token.
+- `POST /api/v1/auth/logout/`: logout e bloqueio do refresh token.
+- `GET /api/v1/me/`: perfil do fisioterapeuta autenticado.
+- `GET /api/v1/dashboard/`: indicadores e agenda isolados por fisioterapeuta.
+
+As views HTML e a autenticação por sessão continuam disponíveis para a plataforma web.
+
 ## Como rodar o projeto (passo a passo)
 
 ### 1. Clonar o repositório
