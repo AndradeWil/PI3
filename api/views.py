@@ -1,9 +1,11 @@
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.dateparse import parse_date
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -11,7 +13,7 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 from core.models import Atendimento, Fisioterapeuta, Paciente, Sessao
 
-from .serializers import PacienteSerializer
+from .serializers import PacienteSerializer, SessaoSerializer
 
 
 def _fisioterapeuta_do_usuario(user):
@@ -44,6 +46,27 @@ class PacienteDetailView(RetrieveUpdateAPIView):
     def get_queryset(self):
         fisioterapeuta = _fisioterapeuta_do_usuario(self.request.user)
         return Paciente.objects.filter(fisioterapeuta=fisioterapeuta).select_related('empresa')
+
+
+class SessaoListView(ListAPIView):
+    serializer_class = SessaoSerializer
+    pagination_class = ApiPagination
+
+    def get_queryset(self):
+        fisioterapeuta = _fisioterapeuta_do_usuario(self.request.user)
+        queryset = Sessao.objects.filter(
+            atendimento__fisioterapeuta=fisioterapeuta,
+        ).select_related(
+            'atendimento__paciente',
+            'atendimento__tipo_atendimento',
+        ).order_by('data_hora')
+        date_value = self.request.query_params.get('data')
+        if not date_value:
+            date_value = timezone.localdate().isoformat()
+        selected_date = parse_date(date_value)
+        if selected_date is None:
+            raise ValidationError({'data': ['Use o formato AAAA-MM-DD.']})
+        return queryset.filter(data_hora__date=selected_date)
 
 
 class MeView(APIView):

@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/auth/presentation/pages/login_page.dart';
@@ -8,6 +7,7 @@ import '../features/more/presentation/pages/more_page.dart';
 import '../features/patients/presentation/pages/patient_detail_page.dart';
 import '../features/patients/presentation/pages/patient_form_page.dart';
 import '../features/patients/presentation/pages/patients_page.dart';
+import '../features/schedule/presentation/pages/schedule_page.dart';
 import 'shell/app_shell.dart';
 
 final appRouter = GoRouter(
@@ -26,13 +26,8 @@ final appRouter = GoRouter(
         ),
         GoRoute(
           path: '/agenda',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: FeaturePlaceholder(
-              icon: Icons.calendar_month_outlined,
-              title: 'Agenda',
-              description: 'Organize as visitas e registre suas sessoes.',
-            ),
-          ),
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: SchedulePage()),
         ),
         GoRoute(
           path: '/pacientes',

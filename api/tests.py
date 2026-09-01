@@ -196,3 +196,64 @@ class PacienteApiTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(Paciente.objects.filter(nome='Paciente invalido').exists())
+
+
+class SessaoApiTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='agenda-ana', password='senha-123')
+        self.fisioterapeuta = Fisioterapeuta.objects.create(user=self.user)
+        self.other_user = User.objects.create_user(username='agenda-bia', password='senha-456')
+        self.other_fisioterapeuta = Fisioterapeuta.objects.create(user=self.other_user)
+        self.selected_date = timezone.localdate() + timedelta(days=2)
+        self._create_session(self.fisioterapeuta, 'Maria', self.selected_date, 14)
+        self._create_session(self.fisioterapeuta, 'Joao', self.selected_date + timedelta(days=1), 10)
+        self._create_session(self.other_fisioterapeuta, 'Paciente de Bia', self.selected_date, 16)
+
+    def _create_session(self, fisioterapeuta, patient_name, selected_date, hour):
+        patient = Paciente.objects.create(
+            fisioterapeuta=fisioterapeuta,
+            nome=patient_name,
+            endereco='Rua da agenda',
+            quadro_clinico='Teste',
+        )
+        appointment_type = TipoAtendimento.objects.create(
+            fisioterapeuta=fisioterapeuta,
+            nome=f'Tipo {patient_name}',
+        )
+        appointment = Atendimento.objects.create(
+            fisioterapeuta=fisioterapeuta,
+            paciente=patient,
+            tipo_atendimento=appointment_type,
+            valor_por_sessao=Decimal('100.00'),
+        )
+        session_time = timezone.make_aware(
+            timezone.datetime.combine(selected_date, timezone.datetime.min.time()).replace(hour=hour),
+        )
+        return Sessao.objects.create(
+            atendimento=appointment,
+            data_hora=session_time,
+            duracao_minutos=60,
+            valor_sessao=Decimal('100.00'),
+        )
+
+    def test_list_requires_authentication(self):
+        response = self.client.get(reverse('api_sessoes'))
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_list_filters_date_and_authenticated_therapist(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(reverse('api_sessoes'), {'data': self.selected_date.isoformat()})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['paciente_nome'], 'Maria')
+        self.assertEqual(response.data['results'][0]['endereco'], 'Rua da agenda')
+
+    def test_list_rejects_invalid_date(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(reverse('api_sessoes'), {'data': '01-09-2026'})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

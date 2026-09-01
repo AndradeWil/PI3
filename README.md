@@ -36,8 +36,21 @@ O cliente Flutter está em [mobile/](mobile/) e utiliza por padrão a API public
 - `GET /api/v1/dashboard/`: indicadores e agenda isolados por fisioterapeuta.
 - `GET, POST /api/v1/pacientes/`: lista paginada, busca e cadastro de pacientes.
 - `GET, PATCH /api/v1/pacientes/{id}/`: consulta e edição de paciente.
+- `GET /api/v1/sessoes/?data=AAAA-MM-DD`: agenda diária do fisioterapeuta.
 
 As views HTML e a autenticação por sessão continuam disponíveis para a plataforma web.
+
+### Administrador no Render
+
+O `build.sh` executa o comando idempotente `ensure_admin`. Configure no painel **Environment** do serviço:
+
+- `DJANGO_SUPERUSER_USERNAME`
+- `DJANGO_SUPERUSER_EMAIL`
+- `DJANGO_SUPERUSER_PASSWORD`
+
+No próximo deploy, o usuário será criado ou atualizado como administrador. Se alguma variável estiver ausente, o build continua sem criar usuário. A senha deve existir somente nas variáveis secretas do Render, nunca no repositório.
+
+> O filesystem dos serviços gratuitos do Render é efêmero. Um banco SQLite armazenado nele pode perder usuários e dados em reinicializações ou novos deploys. Para dados persistentes, use PostgreSQL externo/persistente e configure o Django por variável de ambiente.
 
 ## Como rodar o projeto (passo a passo)
 
