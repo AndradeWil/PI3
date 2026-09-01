@@ -58,19 +58,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Align(
-                      child: Container(
-                        width: 72,
-                        height: 72,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(
-                          Icons.accessibility_new,
-                          size: 40,
-                          color: Colors.white,
+                    const Align(
+                      child: SizedBox(
+                        width: 112,
+                        height: 112,
+                        child: Image(
+                          image: AssetImage('assets/logo_img.png'),
+                          fit: BoxFit.contain,
                         ),
                       ),
                     ),

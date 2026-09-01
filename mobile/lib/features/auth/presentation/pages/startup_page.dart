@@ -20,7 +20,14 @@ class StartupPage extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.accessibility_new, size: 56),
+            SizedBox(
+              width: 88,
+              height: 88,
+              child: Image(
+                image: AssetImage('assets/logo_img.png'),
+                fit: BoxFit.contain,
+              ),
+            ),
             SizedBox(height: 20),
             CircularProgressIndicator(),
           ],

@@ -83,15 +83,13 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(
+        const SizedBox(
           width: 40,
           height: 40,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary,
-            borderRadius: BorderRadius.circular(8),
+          child: Image(
+            image: AssetImage('assets/logo_img.png'),
+            fit: BoxFit.contain,
           ),
-          child: const Icon(Icons.accessibility_new, color: Colors.white),
         ),
         const SizedBox(width: 12),
         Column(

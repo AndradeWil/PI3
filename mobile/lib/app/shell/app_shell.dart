@@ -142,15 +142,13 @@ class _BrandMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return const SizedBox(
       width: 48,
       height: 48,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary,
-        borderRadius: BorderRadius.circular(8),
+      child: Image(
+        image: AssetImage('assets/logo_img.png'),
+        fit: BoxFit.contain,
       ),
-      child: const Icon(Icons.accessibility_new, color: Colors.white),
     );
   }
 }
