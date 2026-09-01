@@ -8,7 +8,16 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from core.models import Atendimento, Empresa, Fisioterapeuta, Paciente, Sessao, TipoAtendimento
+from core.models import (
+    Atendimento,
+    Deslocamento,
+    Empresa,
+    Fisioterapeuta,
+    Glosa,
+    Paciente,
+    Sessao,
+    TipoAtendimento,
+)
 
 
 class DashboardApiTests(APITestCase):
@@ -654,3 +663,43 @@ class InteligenciaDadosApiTests(APITestCase):
         self.assertEqual(forecast['status'], 'disponivel')
         self.assertEqual(forecast['receita_proximo_mes'], '200.00')
         self.assertEqual(forecast['tendencia_percentual'], 50.0)
+
+    def test_travel_denials_and_churn_return_demonstration_metrics(self):
+        session = self._session(
+            self.therapist,
+            0,
+            Decimal('120.00'),
+            attended=False,
+        )
+        Deslocamento.objects.create(
+            sessao=session,
+            distancia_km=Decimal('12.50'),
+            custo=Decimal('9.00'),
+        )
+        Glosa.objects.create(
+            sessao=session,
+            operadora='Operadora Demo',
+            valor=Decimal('35.00'),
+            status='pendente',
+        )
+        Glosa.objects.create(
+            sessao=session,
+            operadora='Operadora Demo',
+            valor=Decimal('10.00'),
+            status='revertida',
+        )
+
+        response = self.client.get(reverse('api_inteligencia_resumo'))
+
+        travel = response.data['custos_deslocamento']
+        denials = response.data['glosas']
+        churn = response.data['rotatividade']
+        self.assertEqual(travel['status'], 'disponivel')
+        self.assertEqual(travel['custo_total'], '9.00')
+        self.assertEqual(travel['distancia_total_km'], '12.50')
+        self.assertEqual(denials['quantidade'], 1)
+        self.assertEqual(denials['valor_total'], '35.00')
+        self.assertEqual(denials['principal_operadora'], 'Operadora Demo')
+        self.assertEqual(churn['status'], 'disponivel')
+        self.assertEqual(churn['metodo'], 'heuristica_recencia_faltas')
+        self.assertEqual(churn['ranking'][0]['paciente_nome'], f'Paciente {self.therapist.id}')

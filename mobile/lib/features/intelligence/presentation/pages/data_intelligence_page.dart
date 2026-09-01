@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../application/intelligence_providers.dart';
@@ -95,21 +96,9 @@ class _Content extends StatelessWidget {
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 8),
-        _AvailabilityCard(
-          icon: Icons.route_outlined,
-          title: 'Custos de deslocamento',
-          availability: data.travelCosts,
-        ),
-        _AvailabilityCard(
-          icon: Icons.receipt_long_outlined,
-          title: 'Analise de glosas',
-          availability: data.denials,
-        ),
-        _AvailabilityCard(
-          icon: Icons.person_off_outlined,
-          title: 'Risco de evasao',
-          availability: data.churn,
-        ),
+        _TravelCard(analysis: data.travelCosts),
+        _DenialCard(analysis: data.denials),
+        _ChurnCard(analysis: data.churn),
       ],
     );
   }
@@ -279,27 +268,216 @@ class _ForecastCard extends StatelessWidget {
   }
 }
 
-class _AvailabilityCard extends StatelessWidget {
-  const _AvailabilityCard({
-    required this.icon,
-    required this.title,
-    required this.availability,
-  });
+class _TravelCard extends StatelessWidget {
+  const _TravelCard({required this.analysis});
 
-  final IconData icon;
-  final String title;
-  final DataAvailability availability;
+  final TravelCostAnalysis analysis;
+
+  @override
+  Widget build(BuildContext context) {
+    final currency = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const _AnalysisHeader(
+              icon: Icons.route_outlined,
+              title: 'Custos de deslocamento',
+              badge: 'Demonstracao',
+            ),
+            const SizedBox(height: 12),
+            if (!analysis.available)
+              _InsufficientData(reason: analysis.reason)
+            else ...[
+              Text(
+                currency.format(analysis.totalCost),
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const Text('Custo total estimado'),
+              const Divider(height: 24),
+              _ValueLine(
+                label: 'Distancia total',
+                value:
+                    '${NumberFormat('0.0', 'pt_BR').format(analysis.totalDistance)} km',
+              ),
+              _ValueLine(
+                label: 'Media por sessao',
+                value: currency.format(analysis.averageCost),
+              ),
+              _ValueLine(label: 'Deslocamentos', value: '${analysis.records}'),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DenialCard extends StatelessWidget {
+  const _DenialCard({required this.analysis});
+
+  final DenialAnalysis analysis;
+
+  @override
+  Widget build(BuildContext context) {
+    final currency = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const _AnalysisHeader(
+              icon: Icons.receipt_long_outlined,
+              title: 'Analise de glosas',
+              badge: 'Demonstracao',
+            ),
+            const SizedBox(height: 12),
+            if (!analysis.available)
+              _InsufficientData(reason: analysis.reason)
+            else ...[
+              Text(
+                currency.format(analysis.totalValue),
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const Text('Valor glosado em aberto/confirmado'),
+              const Divider(height: 24),
+              _ValueLine(label: 'Ocorrencias', value: '${analysis.count}'),
+              _ValueLine(label: 'Pendentes', value: '${analysis.pending}'),
+              _ValueLine(
+                label: 'Taxa sobre sessoes',
+                value: '${NumberFormat('0.0', 'pt_BR').format(analysis.rate)}%',
+              ),
+              _ValueLine(
+                label: 'Principal operadora',
+                value: analysis.mainOperator,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ChurnCard extends StatelessWidget {
+  const _ChurnCard({required this.analysis});
+
+  final ChurnAnalysis analysis;
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: ListTile(
-        minTileHeight: 80,
-        leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
-        title: Text(title),
-        subtitle: availability.available
-            ? const Text('Analise disponivel')
-            : _InsufficientData(reason: availability.reason),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const _AnalysisHeader(
+              icon: Icons.person_off_outlined,
+              title: 'Risco de evasao',
+              badge: 'Heuristica',
+            ),
+            const SizedBox(height: 12),
+            if (!analysis.available)
+              _InsufficientData(reason: analysis.reason)
+            else ...[
+              Text(
+                '${analysis.atRiskCount} paciente(s) pedem atencao',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                analysis.warning,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const Divider(height: 24),
+              for (final patient in analysis.patients)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: CircleAvatar(
+                    backgroundColor: _riskColor(patient.level)
+                        .withValues(alpha: 0.16),
+                    child: Text(
+                      '${patient.risk}%',
+                      style: TextStyle(
+                        color: _riskColor(patient.level),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  title: Text(patient.patientName),
+                  subtitle: Text(patient.mainFactor),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push('/pacientes/${patient.patientId}'),
+                ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _riskColor(String level) {
+    return switch (level) {
+      'alto' => const Color(0xFFC43B43),
+      'moderado' => const Color(0xFFB5640F),
+      _ => const Color(0xFF287A4D),
+    };
+  }
+}
+
+class _AnalysisHeader extends StatelessWidget {
+  const _AnalysisHeader({
+    required this.icon,
+    required this.title,
+    required this.badge,
+  });
+
+  final IconData icon;
+  final String title;
+  final String badge;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, color: Theme.of(context).colorScheme.primary),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(title, style: Theme.of(context).textTheme.titleLarge),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.secondaryContainer,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(badge, style: Theme.of(context).textTheme.labelSmall),
+        ),
+      ],
+    );
+  }
+}
+
+class _ValueLine extends StatelessWidget {
+  const _ValueLine({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        children: [
+          Expanded(child: Text(label)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w700)),
+        ],
       ),
     );
   }

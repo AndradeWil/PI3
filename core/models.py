@@ -83,3 +83,29 @@ class Sessao(models.Model):
 
 	def __str__(self):
 		return f'{self.atendimento.paciente.nome} em {self.data_hora:%d/%m/%Y %H:%M}'
+
+
+class Deslocamento(models.Model):
+	sessao = models.OneToOneField(Sessao, on_delete=models.CASCADE, related_name='deslocamento')
+	distancia_km = models.DecimalField(max_digits=8, decimal_places=2)
+	custo = models.DecimalField(max_digits=10, decimal_places=2)
+
+	def __str__(self):
+		return f'{self.distancia_km} km - R$ {self.custo}'
+
+
+class Glosa(models.Model):
+	STATUS_CHOICES = [
+		('pendente', 'Pendente'),
+		('confirmada', 'Confirmada'),
+		('revertida', 'Revertida'),
+	]
+
+	sessao = models.ForeignKey(Sessao, on_delete=models.CASCADE, related_name='glosas')
+	operadora = models.CharField(max_length=150)
+	valor = models.DecimalField(max_digits=10, decimal_places=2)
+	motivo = models.CharField(max_length=255, blank=True)
+	status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente')
+
+	def __str__(self):
+		return f'{self.operadora} - R$ {self.valor}'

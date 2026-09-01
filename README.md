@@ -52,7 +52,7 @@ O cliente Flutter está em [mobile/](mobile/) e utiliza por padrão a API public
 - `GET /api/v1/relatorios/sessoes/pdf/`: exportação PDF autenticada por período.
 - `GET /api/v1/inteligencia/resumo/`: série executiva, previsão baseline e disponibilidade dos módulos analíticos.
 
-A previsão financeira usa média móvel de três meses e só é exibida quando há histórico mínimo. Glosas, custos de deslocamento e evasão retornam `dados_insuficientes` enquanto o domínio ainda não possui dados adequados para modelos validados.
+A previsão financeira usa média móvel de três meses e só é exibida quando há histórico mínimo. A massa de demonstração inclui deslocamentos e glosas persistidos. O risco de evasão usa uma heurística explicável de recência e faltas, identificada na interface como demonstrativa e não como modelo clínico validado.
 
 As views HTML e a autenticação por sessão continuam disponíveis para a plataforma web.
 
@@ -74,7 +74,7 @@ Para manter uma conta pronta para apresentações, configure também no **Enviro
 - `DJANGO_DEMO_EMAIL`
 - `DJANGO_DEMO_PASSWORD`
 
-O `build.sh` executa `ensure_demo_data` e cria ou atualiza uma conta de fisioterapeuta com empresa, tipos de atendimento, quatro pacientes, atendimentos ativos e sessões de histórico/agenda. A operação é idempotente: novos deploys atualizam a massa marcada como demonstração sem duplicá-la. Use credenciais próprias para apresentação e não publique a senha no README, nos slides ou no Git.
+O `build.sh` executa `ensure_demo_data` e cria ou atualiza uma conta de fisioterapeuta com empresa, tipos de atendimento, quatro pacientes, atendimentos ativos, sessões de histórico/agenda, custos de deslocamento e glosas. A operação é idempotente: novos deploys atualizam a massa marcada como demonstração sem duplicá-la. Use credenciais próprias para apresentação e não publique a senha no README, nos slides ou no Git.
 
 > O filesystem dos serviços gratuitos do Render é efêmero. Um banco SQLite armazenado nele pode perder usuários e dados em reinicializações ou novos deploys. Para dados persistentes, use PostgreSQL externo/persistente e configure o Django por variável de ambiente.
 

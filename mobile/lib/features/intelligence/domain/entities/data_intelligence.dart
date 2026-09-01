@@ -19,9 +19,9 @@ class DataIntelligence {
   final double absenceRate;
   final List<MonthlyDataPoint> monthlySeries;
   final FinancialForecast forecast;
-  final DataAvailability travelCosts;
-  final DataAvailability denials;
-  final DataAvailability churn;
+  final TravelCostAnalysis travelCosts;
+  final DenialAnalysis denials;
+  final ChurnAnalysis churn;
 }
 
 class MonthlyDataPoint {
@@ -54,9 +54,72 @@ class FinancialForecast {
   final String? method;
 }
 
-class DataAvailability {
-  const DataAvailability({required this.available, required this.reason});
+class TravelCostAnalysis {
+  const TravelCostAnalysis({
+    required this.available,
+    required this.reason,
+    required this.records,
+    required this.totalDistance,
+    required this.totalCost,
+    required this.averageCost,
+  });
 
   final bool available;
   final String reason;
+  final int records;
+  final double totalDistance;
+  final double totalCost;
+  final double averageCost;
+}
+
+class DenialAnalysis {
+  const DenialAnalysis({
+    required this.available,
+    required this.reason,
+    required this.count,
+    required this.pending,
+    required this.totalValue,
+    required this.rate,
+    required this.mainOperator,
+  });
+
+  final bool available;
+  final String reason;
+  final int count;
+  final int pending;
+  final double totalValue;
+  final double rate;
+  final String mainOperator;
+}
+
+class ChurnAnalysis {
+  const ChurnAnalysis({
+    required this.available,
+    required this.reason,
+    required this.warning,
+    required this.atRiskCount,
+    required this.patients,
+  });
+
+  final bool available;
+  final String reason;
+  final String warning;
+  final int atRiskCount;
+  final List<PatientChurnRisk> patients;
+}
+
+class PatientChurnRisk {
+  const PatientChurnRisk({
+    required this.patientId,
+    required this.patientName,
+    required this.risk,
+    required this.level,
+    required this.mainFactor,
+  });
+
+  final int patientId;
+  final String patientName;
+  final int risk;
+  final String level;
+  final String mainFactor;
 }

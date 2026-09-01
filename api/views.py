@@ -22,7 +22,16 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 
-from core.models import Atendimento, Empresa, Fisioterapeuta, Paciente, Sessao, TipoAtendimento
+from core.models import (
+    Atendimento,
+    Deslocamento,
+    Empresa,
+    Fisioterapeuta,
+    Glosa,
+    Paciente,
+    Sessao,
+    TipoAtendimento,
+)
 
 from .serializers import (
     AtendimentoResumoSerializer,
@@ -479,6 +488,9 @@ class InteligenciaDadosView(APIView):
             if elapsed_month_sessions.exists()
             else 0
         )
+        travel = self._travel_summary(therapist, months[0])
+        denials = self._denial_summary(therapist, sessions)
+        churn = self._churn_summary(therapist)
         return Response({
             'atualizado_em': timezone.now().isoformat(),
             'executivo': {
@@ -489,18 +501,9 @@ class InteligenciaDadosView(APIView):
                 'serie_mensal': monthly,
             },
             'previsao_financeira': forecast,
-            'custos_deslocamento': {
-                'status': 'dados_insuficientes',
-                'motivo': 'Custos de deslocamento ainda nao sao registrados.',
-            },
-            'glosas': {
-                'status': 'dados_insuficientes',
-                'motivo': 'Historico de glosas ainda nao esta disponivel.',
-            },
-            'rotatividade': {
-                'status': 'dados_insuficientes',
-                'motivo': 'Ainda nao ha historico suficiente para um modelo de evasao validado.',
-            },
+            'custos_deslocamento': travel,
+            'glosas': denials,
+            'rotatividade': churn,
         })
 
     @staticmethod
@@ -526,6 +529,103 @@ class InteligenciaDadosView(APIView):
             'metodo': 'media_movel_3_meses',
             'receita_proximo_mes': f'{expected:.2f}',
             'tendencia_percentual': trend,
+        }
+
+    @staticmethod
+    def _travel_summary(therapist, start):
+        values = Deslocamento.objects.filter(
+            sessao__atendimento__fisioterapeuta=therapist,
+            sessao__data_hora__date__gte=start,
+        ).aggregate(
+            total_cost=Sum('custo'),
+            total_distance=Sum('distancia_km'),
+        )
+        count = Deslocamento.objects.filter(
+            sessao__atendimento__fisioterapeuta=therapist,
+            sessao__data_hora__date__gte=start,
+        ).count()
+        if not count:
+            return {
+                'status': 'dados_insuficientes',
+                'motivo': 'Custos de deslocamento ainda nao sao registrados.',
+            }
+        total_cost = values['total_cost'] or Decimal('0')
+        return {
+            'status': 'disponivel',
+            'registros': count,
+            'distancia_total_km': f"{values['total_distance'] or Decimal('0'):.2f}",
+            'custo_total': f'{total_cost:.2f}',
+            'custo_medio_sessao': f'{total_cost / count:.2f}',
+        }
+
+    @staticmethod
+    def _denial_summary(therapist, sessions):
+        denials = Glosa.objects.filter(
+            sessao__atendimento__fisioterapeuta=therapist,
+        ).exclude(status='revertida')
+        if not denials.exists():
+            return {
+                'status': 'dados_insuficientes',
+                'motivo': 'Historico de glosas ainda nao esta disponivel.',
+            }
+        total_value = denials.aggregate(total=Sum('valor')).get('total') or Decimal('0')
+        affected_sessions = denials.values('sessao').distinct().count()
+        session_count = sessions.count()
+        operator = (
+            denials.values('operadora')
+            .annotate(total=Sum('valor'))
+            .order_by('-total')
+            .first()
+        )
+        return {
+            'status': 'disponivel',
+            'quantidade': denials.count(),
+            'pendentes': denials.filter(status='pendente').count(),
+            'valor_total': f'{total_value:.2f}',
+            'taxa_percentual': round(affected_sessions / session_count * 100, 1) if session_count else 0,
+            'principal_operadora': operator['operadora'] if operator else '',
+        }
+
+    @staticmethod
+    def _churn_summary(therapist):
+        now = timezone.now()
+        risks = []
+        appointments = Atendimento.objects.filter(
+            fisioterapeuta=therapist,
+            ativo=True,
+        ).select_related('paciente')
+        for appointment in appointments:
+            past = appointment.sessoes.filter(data_hora__lt=now).order_by('-data_hora')
+            last = past.first()
+            if last is None:
+                score = 80
+                reason = 'Nenhuma sessao realizada no historico.'
+            else:
+                days = (timezone.localdate() - timezone.localtime(last.data_hora).date()).days
+                recency_score = 50 if days > 30 else 30 if days > 14 else 10
+                recent = list(past[:5])
+                absences = sum(not session.compareceu for session in recent)
+                score = min(95, recency_score + round(absences / len(recent) * 40))
+                reason = f'Ultima sessao ha {days} dias; {absences} falta(s) nas ultimas {len(recent)}.'
+            risks.append({
+                'paciente_id': appointment.paciente_id,
+                'paciente_nome': appointment.paciente.nome,
+                'risco_percentual': score,
+                'nivel': 'alto' if score >= 70 else 'moderado' if score >= 40 else 'baixo',
+                'fator_principal': reason,
+            })
+        risks.sort(key=lambda item: item['risco_percentual'], reverse=True)
+        if not risks:
+            return {
+                'status': 'dados_insuficientes',
+                'motivo': 'Nao ha pacientes ativos para avaliar.',
+            }
+        return {
+            'status': 'disponivel',
+            'metodo': 'heuristica_recencia_faltas',
+            'aviso': 'Indicador administrativo demonstrativo; nao e um modelo clinico validado.',
+            'pacientes_em_risco': sum(item['nivel'] != 'baixo' for item in risks),
+            'ranking': risks[:5],
         }
 
 

@@ -12,13 +12,9 @@ class DataIntelligenceDto {
   DataIntelligence toDomain() {
     final executive = data['executivo'] as Map<String, dynamic>;
     final forecastData = data['previsao_financeira'] as Map<String, dynamic>;
-    DataAvailability availability(String key) {
-      final value = data[key] as Map<String, dynamic>;
-      return DataAvailability(
-        available: value['status'] == 'disponivel',
-        reason: value['motivo'] as String? ?? '',
-      );
-    }
+    final travel = data['custos_deslocamento'] as Map<String, dynamic>;
+    final denials = data['glosas'] as Map<String, dynamic>;
+    final churn = data['rotatividade'] as Map<String, dynamic>;
 
     return DataIntelligence(
       updatedAt: DateTime.parse(data['atualizado_em'] as String).toLocal(),
@@ -48,9 +44,45 @@ class DataIntelligenceDto {
             ?.toDouble(),
         method: forecastData['metodo'] as String?,
       ),
-      travelCosts: availability('custos_deslocamento'),
-      denials: availability('glosas'),
-      churn: availability('rotatividade'),
+      travelCosts: TravelCostAnalysis(
+        available: travel['status'] == 'disponivel',
+        reason: travel['motivo'] as String? ?? '',
+        records: travel['registros'] as int? ?? 0,
+        totalDistance: _decimal(travel['distancia_total_km']),
+        totalCost: _decimal(travel['custo_total']),
+        averageCost: _decimal(travel['custo_medio_sessao']),
+      ),
+      denials: DenialAnalysis(
+        available: denials['status'] == 'disponivel',
+        reason: denials['motivo'] as String? ?? '',
+        count: denials['quantidade'] as int? ?? 0,
+        pending: denials['pendentes'] as int? ?? 0,
+        totalValue: _decimal(denials['valor_total']),
+        rate: (denials['taxa_percentual'] as num?)?.toDouble() ?? 0,
+        mainOperator: denials['principal_operadora'] as String? ?? '',
+      ),
+      churn: ChurnAnalysis(
+        available: churn['status'] == 'disponivel',
+        reason: churn['motivo'] as String? ?? '',
+        warning: churn['aviso'] as String? ?? '',
+        atRiskCount: churn['pacientes_em_risco'] as int? ?? 0,
+        patients: (churn['ranking'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(
+              (item) => PatientChurnRisk(
+                patientId: item['paciente_id'] as int,
+                patientName: item['paciente_nome'] as String? ?? '',
+                risk: item['risco_percentual'] as int? ?? 0,
+                level: item['nivel'] as String? ?? 'baixo',
+                mainFactor: item['fator_principal'] as String? ?? '',
+              ),
+            )
+            .toList(growable: false),
+      ),
     );
+  }
+
+  static double _decimal(dynamic value) {
+    return double.tryParse(value as String? ?? '') ?? 0;
   }
 }

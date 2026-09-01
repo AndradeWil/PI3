@@ -5,7 +5,16 @@ from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.test import TestCase
 
-from .models import Atendimento, Empresa, Fisioterapeuta, Paciente, Sessao, TipoAtendimento
+from .models import (
+    Atendimento,
+    Deslocamento,
+    Empresa,
+    Fisioterapeuta,
+    Glosa,
+    Paciente,
+    Sessao,
+    TipoAtendimento,
+)
 
 
 class EnsureAdminCommandTests(TestCase):
@@ -62,3 +71,5 @@ class EnsureDemoDataCommandTests(TestCase):
         self.assertEqual(Paciente.objects.count(), 4)
         self.assertEqual(Atendimento.objects.count(), 4)
         self.assertEqual(Sessao.objects.count(), 9)
+        self.assertEqual(Deslocamento.objects.count(), 9)
+        self.assertEqual(Glosa.objects.count(), 3)

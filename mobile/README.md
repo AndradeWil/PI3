@@ -49,8 +49,10 @@ agora`. Erros permanentes de validação não são adicionados à fila.
 
 A tela apresenta indicadores operacionais reais e a série dos últimos seis
 meses. A previsão disponível é um baseline de média móvel, não um diagnóstico
-clínico nem uma previsão de ML validada. Módulos sem histórico suficiente
-exibem o motivo e não fabricam probabilidades.
+clínico nem uma previsão de ML validada. Na conta demo, deslocamentos e glosas
+usam registros persistidos; evasão usa uma heurística de recência e faltas com
+os fatores exibidos para cada paciente. Esses blocos são rotulados como
+`Demonstração` ou `Heurística` na interface.
 
 ## Executar
 

@@ -7,7 +7,16 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
 
-from core.models import Atendimento, Empresa, Fisioterapeuta, Paciente, Sessao, TipoAtendimento
+from core.models import (
+    Atendimento,
+    Deslocamento,
+    Empresa,
+    Fisioterapeuta,
+    Glosa,
+    Paciente,
+    Sessao,
+    TipoAtendimento,
+)
 
 
 class Command(BaseCommand):
@@ -107,7 +116,7 @@ class Command(BaseCommand):
         schedule = [
             (-75, 9, 0, True),
             (-45, 10, 30, True),
-            (-14, 14, 0, True),
+            (-14, 14, 0, False),
             (0, 9, 0, True),
             (0, 11, 0, True),
             (0, 14, 30, False),
@@ -115,18 +124,52 @@ class Command(BaseCommand):
             (3, 15, 30, False),
             (7, 9, 30, False),
         ]
+        demo_sessions = []
         for index, (day_offset, hour, minute, attended) in enumerate(schedule):
             appointment = appointments[index % len(appointments)]
             local_datetime = timezone.make_aware(
                 datetime.combine(today + timedelta(days=day_offset), time(hour, minute)),
             )
-            Sessao.objects.create(
+            session = Sessao.objects.create(
                 atendimento=appointment,
                 data_hora=local_datetime,
                 duracao_minutos=60,
                 valor_sessao=appointment.valor_por_sessao,
                 compareceu=attended,
                 observacoes='[DEMO] Sessao gerada automaticamente.',
+            )
+            demo_sessions.append(session)
+
+        travel_data = [
+            ('12.40', '9.20'),
+            ('18.00', '13.50'),
+            ('8.60', '6.40'),
+            ('15.20', '11.30'),
+            ('6.80', '5.10'),
+            ('21.50', '16.10'),
+            ('10.00', '7.50'),
+            ('14.70', '11.00'),
+            ('9.30', '7.00'),
+        ]
+        for session, (distance, cost) in zip(demo_sessions, travel_data):
+            Deslocamento.objects.create(
+                sessao=session,
+                distancia_km=Decimal(distance),
+                custo=Decimal(cost),
+            )
+
+        denial_data = [
+            (demo_sessions[0], 'Saude em Casa Demo', '35.00', 'Documento incompleto', 'confirmada'),
+            (demo_sessions[1], 'Saude em Casa Demo', '50.00', 'Divergencia de codigo', 'pendente'),
+            (demo_sessions[2], 'Convenio Exemplo', '40.00', 'Prazo de envio', 'revertida'),
+        ]
+        for session, operator, value, reason, status in denial_data:
+            Glosa.objects.create(
+                sessao=session,
+                operadora=operator,
+                valor=Decimal(value),
+                motivo=reason,
+                status=status,
             )
 
         self.stdout.write(self.style.SUCCESS('Usuario e massa de demonstracao atualizados.'))
