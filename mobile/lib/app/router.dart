@@ -1,5 +1,8 @@
 import 'package:go_router/go_router.dart';
 
+import '../features/appointments/presentation/pages/appointment_detail_page.dart';
+import '../features/appointments/presentation/pages/appointment_form_page.dart';
+import '../features/appointments/presentation/pages/appointments_page.dart';
 import '../features/auth/presentation/pages/login_page.dart';
 import '../features/auth/presentation/pages/startup_page.dart';
 import '../features/dashboard/presentation/pages/dashboard_page.dart';
@@ -15,6 +18,30 @@ final appRouter = GoRouter(
   routes: [
     GoRoute(path: '/', builder: (context, state) => const StartupPage()),
     GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
+    GoRoute(
+      path: '/atendimentos',
+      builder: (context, state) => const AppointmentsPage(),
+      routes: [
+        GoRoute(
+          path: 'novo',
+          builder: (context, state) => const AppointmentFormPage(),
+        ),
+        GoRoute(
+          path: ':id',
+          builder: (context, state) => AppointmentDetailPage(
+            appointmentId: int.parse(state.pathParameters['id']!),
+          ),
+          routes: [
+            GoRoute(
+              path: 'editar',
+              builder: (context, state) => AppointmentFormPage(
+                appointmentId: int.parse(state.pathParameters['id']!),
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
     ShellRoute(
       builder: (context, state, child) =>
           AppShell(currentLocation: state.uri.path, child: child),

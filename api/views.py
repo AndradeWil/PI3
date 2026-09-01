@@ -13,9 +13,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
-from core.models import Atendimento, Fisioterapeuta, Paciente, Sessao
+from core.models import Atendimento, Empresa, Fisioterapeuta, Paciente, Sessao, TipoAtendimento
 
-from .serializers import AtendimentoResumoSerializer, PacienteSerializer, SessaoSerializer
+from .serializers import (
+    AtendimentoResumoSerializer,
+    AtendimentoSerializer,
+    EmpresaOpcaoSerializer,
+    PacienteSerializer,
+    SessaoSerializer,
+    TipoAtendimentoOpcaoSerializer,
+)
 
 
 def _fisioterapeuta_do_usuario(user):
@@ -81,6 +88,53 @@ class AtendimentoAtivoListView(ListAPIView):
             fisioterapeuta=fisioterapeuta,
             ativo=True,
         ).select_related('paciente', 'tipo_atendimento').order_by('paciente__nome')
+
+
+class AtendimentoListView(ListCreateAPIView):
+    serializer_class = AtendimentoSerializer
+    pagination_class = ApiPagination
+
+    def get_queryset(self):
+        therapist = _fisioterapeuta_do_usuario(self.request.user)
+        return Atendimento.objects.filter(fisioterapeuta=therapist).select_related(
+            'paciente',
+            'empresa',
+            'tipo_atendimento',
+        ).order_by('-ativo', 'paciente__nome')
+
+    def perform_create(self, serializer):
+        serializer.save(fisioterapeuta=_fisioterapeuta_do_usuario(self.request.user))
+
+
+class AtendimentoDetailView(RetrieveUpdateAPIView):
+    serializer_class = AtendimentoSerializer
+
+    def get_queryset(self):
+        therapist = _fisioterapeuta_do_usuario(self.request.user)
+        return Atendimento.objects.filter(fisioterapeuta=therapist).select_related(
+            'paciente',
+            'empresa',
+            'tipo_atendimento',
+        )
+
+
+class AtendimentoOptionsView(APIView):
+    def get(self, request):
+        therapist = _fisioterapeuta_do_usuario(request.user)
+        return Response({
+            'pacientes': [
+                {'id': patient.id, 'nome': patient.nome}
+                for patient in Paciente.objects.filter(fisioterapeuta=therapist).order_by('nome')
+            ],
+            'empresas': EmpresaOpcaoSerializer(
+                Empresa.objects.filter(fisioterapeuta=therapist).order_by('nome'),
+                many=True,
+            ).data,
+            'tipos_atendimento': TipoAtendimentoOpcaoSerializer(
+                TipoAtendimento.objects.filter(fisioterapeuta=therapist).order_by('nome'),
+                many=True,
+            ).data,
+        })
 
 
 class BaterPontoView(APIView):

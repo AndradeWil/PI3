@@ -295,3 +295,98 @@ class SessaoApiTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class AtendimentoApiTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='atendimento-ana', password='senha-123')
+        self.therapist = Fisioterapeuta.objects.create(user=self.user)
+        self.other_user = User.objects.create_user(username='atendimento-bia', password='senha-456')
+        self.other_therapist = Fisioterapeuta.objects.create(user=self.other_user)
+        self.patient = Paciente.objects.create(
+            fisioterapeuta=self.therapist,
+            nome='Maria Silva',
+            quadro_clinico='Teste',
+        )
+        self.other_patient = Paciente.objects.create(
+            fisioterapeuta=self.other_therapist,
+            nome='Paciente de Bia',
+            quadro_clinico='Teste',
+        )
+        self.company = Empresa.objects.create(fisioterapeuta=self.therapist, nome='Empresa Vida')
+        self.appointment_type = TipoAtendimento.objects.create(
+            fisioterapeuta=self.therapist,
+            nome='Fisioterapia Motora',
+            valor_padrao=Decimal('120.00'),
+        )
+        self.appointment = Atendimento.objects.create(
+            fisioterapeuta=self.therapist,
+            paciente=self.patient,
+            empresa=self.company,
+            tipo_atendimento=self.appointment_type,
+            valor_por_sessao=Decimal('120.00'),
+        )
+        Atendimento.objects.create(
+            fisioterapeuta=self.other_therapist,
+            paciente=self.other_patient,
+            tipo_atendimento=TipoAtendimento.objects.create(
+                fisioterapeuta=self.other_therapist,
+                nome='Tipo de Bia',
+            ),
+            valor_por_sessao=Decimal('999.00'),
+        )
+
+    def test_list_and_options_are_isolated(self):
+        self.client.force_authenticate(self.user)
+
+        list_response = self.client.get(reverse('api_atendimentos'))
+        options_response = self.client.get(reverse('api_atendimentos_opcoes'))
+
+        self.assertEqual(list_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(list_response.data['count'], 1)
+        self.assertEqual(list_response.data['results'][0]['paciente_nome'], 'Maria Silva')
+        self.assertEqual(options_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(options_response.data['pacientes'], [{'id': self.patient.id, 'nome': 'Maria Silva'}])
+
+    def test_create_assigns_authenticated_therapist(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(reverse('api_atendimentos'), {
+            'paciente': self.patient.id,
+            'empresa': self.company.id,
+            'tipo_atendimento': self.appointment_type.id,
+            'valor_por_sessao': '135.00',
+            'observacoes': 'Novo plano',
+            'ativo': True,
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        created = Atendimento.objects.get(id=response.data['id'])
+        self.assertEqual(created.fisioterapeuta, self.therapist)
+
+    def test_create_rejects_patient_from_another_therapist(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(reverse('api_atendimentos'), {
+            'paciente': self.other_patient.id,
+            'tipo_atendimento': self.appointment_type.id,
+            'valor_por_sessao': '120.00',
+            'ativo': True,
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_and_cross_tenant_detail(self):
+        self.client.force_authenticate(self.user)
+        update_response = self.client.patch(
+            reverse('api_atendimento_detail', args=[self.appointment.id]),
+            {'ativo': False},
+        )
+        other_appointment = Atendimento.objects.filter(fisioterapeuta=self.other_therapist).get()
+        cross_response = self.client.get(
+            reverse('api_atendimento_detail', args=[other_appointment.id]),
+        )
+
+        self.assertEqual(update_response.status_code, status.HTTP_200_OK)
+        self.assertFalse(update_response.data['ativo'])
+        self.assertEqual(cross_response.status_code, status.HTTP_404_NOT_FOUND)

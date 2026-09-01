@@ -17,20 +17,26 @@ class MorePage extends ConsumerWidget {
           sliver: SliverList.list(
             children: [
               const _SectionTitle('Gestao'),
-              const Card(
+              Card(
                 child: Column(
                   children: [
                     _MenuItem(
+                      icon: Icons.medical_services_outlined,
+                      title: 'Atendimentos',
+                      onTap: () => context.push('/atendimentos'),
+                    ),
+                    const Divider(height: 1, indent: 64),
+                    const _MenuItem(
                       icon: Icons.account_balance_wallet_outlined,
                       title: 'Financeiro',
                     ),
-                    Divider(height: 1, indent: 64),
-                    _MenuItem(
+                    const Divider(height: 1, indent: 64),
+                    const _MenuItem(
                       icon: Icons.receipt_long_outlined,
                       title: 'Relatorios',
                     ),
-                    Divider(height: 1, indent: 64),
-                    _MenuItem(
+                    const Divider(height: 1, indent: 64),
+                    const _MenuItem(
                       icon: Icons.insights_outlined,
                       title: 'Inteligencia de Dados',
                     ),
@@ -73,10 +79,11 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _MenuItem extends StatelessWidget {
-  const _MenuItem({required this.icon, required this.title});
+  const _MenuItem({required this.icon, required this.title, this.onTap});
 
   final IconData icon;
   final String title;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +92,7 @@ class _MenuItem extends StatelessWidget {
       leading: Icon(icon),
       title: Text(title),
       trailing: const Icon(Icons.chevron_right),
-      onTap: () {},
+      onTap: onTap,
     );
   }
 }
