@@ -82,11 +82,38 @@ class SessionActionBar extends ConsumerWidget {
       spacing: 8,
       runSpacing: 8,
       children: [
-        if (!attended)
+        if (attended)
+          Semantics(
+            label: 'Atendimento realizado',
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 48),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE4F5EA),
+                border: Border.all(color: const Color(0xFF3F8F65)),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.check_circle, color: Color(0xFF287A4D)),
+                  SizedBox(width: 8),
+                  Text(
+                    'Realizado',
+                    style: TextStyle(
+                      color: Color(0xFF205F3D),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
           FilledButton.tonalIcon(
             onPressed: () => _run(context, ref, delete: false),
             icon: const Icon(Icons.check_circle_outline),
-            label: const Text('Atendimento realizado'),
+            label: const Text('Marcar como realizado'),
           ),
         OutlinedButton.icon(
           onPressed: () => _run(context, ref, delete: true),

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:physiomanage_mobile/features/dashboard/data/dtos/dashboard_dto.dart';
+import 'package:physiomanage_mobile/features/dashboard/domain/entities/dashboard_summary.dart';
 
 void main() {
   test('maps API dashboard JSON and formats Brazilian currency', () {
@@ -25,5 +26,6 @@ void main() {
     expect(summary.nextSession, isNull);
     expect(summary.todayAgenda.single.patientName, 'Maria Silva');
     expect(summary.todayAgenda.single.location, 'Endereco nao informado');
+    expect(summary.todayAgenda.single.status, SessionStatus.pending);
   });
 }

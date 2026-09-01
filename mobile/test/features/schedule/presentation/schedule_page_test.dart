@@ -7,6 +7,7 @@ import 'package:physiomanage_mobile/features/schedule/domain/entities/active_app
 import 'package:physiomanage_mobile/features/schedule/domain/entities/scheduled_session.dart';
 import 'package:physiomanage_mobile/features/schedule/domain/repositories/schedule_repository.dart';
 import 'package:physiomanage_mobile/features/schedule/presentation/pages/schedule_page.dart';
+import 'package:physiomanage_mobile/features/schedule/presentation/widgets/session_action_bar.dart';
 
 void main() {
   testWidgets('renders sessions for the selected day', (tester) async {
@@ -54,7 +55,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Atendimento realizado'));
+    expect(find.text('Marcar como realizado'), findsOneWidget);
+    expect(find.text('Realizado'), findsNothing);
+    await tester.tap(find.text('Marcar como realizado'));
     await tester.pumpAndSettle();
     expect(
       find.text('Confirma que este atendimento foi realizado?'),
@@ -74,6 +77,26 @@ void main() {
     await tester.pumpAndSettle();
     expect(repository.deletedSessionId, 1);
   });
+
+  testWidgets(
+    'shows a green completed state instead of the attendance action',
+    (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: SessionActionBar(sessionId: 1, attended: true),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Realizado'), findsOneWidget);
+      expect(find.byIcon(Icons.check_circle), findsOneWidget);
+      expect(find.text('Marcar como realizado'), findsNothing);
+      expect(find.text('Excluir'), findsOneWidget);
+    },
+  );
 }
 
 class _ScheduleRepository implements ScheduleRepository {

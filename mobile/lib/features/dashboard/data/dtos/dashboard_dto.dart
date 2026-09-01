@@ -48,7 +48,7 @@ class DashboardDto {
       alerts: alerts,
       nextSession: nextSession?.toDomain(SessionStatus.next),
       todayAgenda: todayAgenda
-          .map((session) => session.toDomain(SessionStatus.confirmed))
+          .map((session) => session.toDomain(SessionStatus.pending))
           .toList(growable: false),
     );
   }

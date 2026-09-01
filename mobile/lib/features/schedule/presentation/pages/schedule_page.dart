@@ -266,7 +266,7 @@ class _SessionCard extends StatelessWidget {
                           children: [
                             Text('${session.durationMinutes} min'),
                             Text(session.value),
-                            Text(session.attended ? 'Realizada' : 'Agendada'),
+                            Text(session.attended ? 'Realizada' : 'Pendente'),
                           ],
                         ),
                       ],
