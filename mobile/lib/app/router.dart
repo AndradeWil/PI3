@@ -5,6 +5,9 @@ import '../features/auth/presentation/pages/login_page.dart';
 import '../features/auth/presentation/pages/startup_page.dart';
 import '../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../features/more/presentation/pages/more_page.dart';
+import '../features/patients/presentation/pages/patient_detail_page.dart';
+import '../features/patients/presentation/pages/patient_form_page.dart';
+import '../features/patients/presentation/pages/patients_page.dart';
 import 'shell/app_shell.dart';
 
 final appRouter = GoRouter(
@@ -33,13 +36,28 @@ final appRouter = GoRouter(
         ),
         GoRoute(
           path: '/pacientes',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: FeaturePlaceholder(
-              icon: Icons.people_outline,
-              title: 'Pacientes',
-              description: 'Consulte e atualize os dados dos pacientes.',
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: PatientsPage()),
+          routes: [
+            GoRoute(
+              path: 'novo',
+              builder: (context, state) => const PatientFormPage(),
             ),
-          ),
+            GoRoute(
+              path: ':id',
+              builder: (context, state) => PatientDetailPage(
+                patientId: int.parse(state.pathParameters['id']!),
+              ),
+              routes: [
+                GoRoute(
+                  path: 'editar',
+                  builder: (context, state) => PatientFormPage(
+                    patientId: int.parse(state.pathParameters['id']!),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
         GoRoute(
           path: '/mais',

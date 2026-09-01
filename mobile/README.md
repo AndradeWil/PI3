@@ -13,6 +13,7 @@ ao Android e preparado para iOS.
 - login JWT com refresh e armazenamento seguro de tokens;
 - dashboard operacional conectado a API de producao;
 - restauracao de sessao e logout com blacklist do refresh token;
+- lista, busca, detalhe, cadastro e edicao de pacientes;
 - projetos nativos Android e iOS.
 
 A URL padrao da API e `https://physiomanage.onrender.com/api/v1`. Outro ambiente

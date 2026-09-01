@@ -2,15 +2,48 @@ from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
+from rest_framework.filters import SearchFilter
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
-from core.models import Atendimento, Fisioterapeuta, Sessao
+from core.models import Atendimento, Fisioterapeuta, Paciente, Sessao
+
+from .serializers import PacienteSerializer
 
 
 def _fisioterapeuta_do_usuario(user):
     return get_object_or_404(Fisioterapeuta, user=user)
+
+
+class ApiPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
+class PacienteListView(ListCreateAPIView):
+    serializer_class = PacienteSerializer
+    pagination_class = ApiPagination
+    filter_backends = (SearchFilter,)
+    search_fields = ('nome', 'telefone', 'email')
+
+    def get_queryset(self):
+        fisioterapeuta = _fisioterapeuta_do_usuario(self.request.user)
+        return Paciente.objects.filter(fisioterapeuta=fisioterapeuta).select_related('empresa').order_by('nome')
+
+    def perform_create(self, serializer):
+        serializer.save(fisioterapeuta=_fisioterapeuta_do_usuario(self.request.user))
+
+
+class PacienteDetailView(RetrieveUpdateAPIView):
+    serializer_class = PacienteSerializer
+
+    def get_queryset(self):
+        fisioterapeuta = _fisioterapeuta_do_usuario(self.request.user)
+        return Paciente.objects.filter(fisioterapeuta=fisioterapeuta).select_related('empresa')
 
 
 class MeView(APIView):

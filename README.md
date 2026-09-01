@@ -34,6 +34,8 @@ O cliente Flutter está em [mobile/](mobile/) e utiliza por padrão a API public
 - `POST /api/v1/auth/logout/`: logout e bloqueio do refresh token.
 - `GET /api/v1/me/`: perfil do fisioterapeuta autenticado.
 - `GET /api/v1/dashboard/`: indicadores e agenda isolados por fisioterapeuta.
+- `GET, POST /api/v1/pacientes/`: lista paginada, busca e cadastro de pacientes.
+- `GET, PATCH /api/v1/pacientes/{id}/`: consulta e edição de paciente.
 
 As views HTML e a autenticação por sessão continuam disponíveis para a plataforma web.
 
