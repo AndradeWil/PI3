@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../auth/application/auth_providers.dart';
+import '../../../../core/sync/session_sync_providers.dart';
 import '../../../schedule/application/schedule_providers.dart';
 import '../../../schedule/presentation/widgets/quick_session_sheet.dart';
 import '../../../schedule/presentation/widgets/session_action_bar.dart';
@@ -13,8 +14,16 @@ class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
 
   Future<void> registerSession(BuildContext context, WidgetRef ref) async {
-    final registered = await showQuickSessionSheet(context);
-    if (!registered || !context.mounted) return;
+    final result = await showQuickSessionSheet(context);
+    if (result == null || !context.mounted) return;
+    if (result == SessionRegistrationResult.queued) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sem conexao. Sessao salva para sincronizar.'),
+        ),
+      );
+      return;
+    }
     ref.invalidate(dashboardSummaryProvider);
     ref.invalidate(activeAppointmentsProvider);
     ref.invalidate(scheduleProvider);
@@ -25,6 +34,7 @@ class DashboardPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(sessionSynchronizationProvider);
     final summary = ref.watch(dashboardSummaryProvider);
     final profile = ref.watch(therapistProfileProvider);
 

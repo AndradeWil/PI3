@@ -24,6 +24,8 @@ ao Android e preparado para iOS.
 - confirmacao de atendimento realizado e exclusao diretamente nos cards do Dashboard e Agenda;
 - cache local criptografado para leitura offline de pacientes e agendas ja sincronizadas;
 - indicador visual quando a tela exibe dados offline e limpeza do cache no logout;
+- fila criptografada para registro offline de sessoes, com retry idempotente;
+- Inteligencia de Dados com KPIs, evolucao mensal, previsao baseline e estados de dados insuficientes;
 - projetos nativos Android e iOS.
 
 A URL padrao da API e `https://physiomanage.onrender.com/api/v1`. Outro ambiente
@@ -33,10 +35,22 @@ pode ser usado com `--dart-define=API_BASE_URL=https://servidor/api/v1`.
 
 Pacientes e dias da Agenda consultados com conexao ficam armazenados localmente
 com criptografia AES. Se a API ficar indisponivel, o app exibe o ultimo snapshot
-salvo e mostra a faixa `Dados offline`. Cadastro, edicao e registro de sessao
-ainda exigem conexao; a fila de escrita offline sera implementada separadamente.
+salvo e mostra a faixa `Dados offline`. O registro rapido de sessao pode ser
+enfileirado sem conexao e sincronizado depois com a mesma chave idempotente.
+Cadastro e edicao de dados ainda exigem conexao.
 
 O cache clinico e apagado quando o usuario encerra a sessao.
+
+Registros de sessão pendentes mantêm o mesmo UUID em todas as tentativas. O app
+tenta sincronizá-los ao abrir Dashboard/Agenda e oferece a ação `Sincronizar
+agora`. Erros permanentes de validação não são adicionados à fila.
+
+## Inteligência de Dados
+
+A tela apresenta indicadores operacionais reais e a série dos últimos seis
+meses. A previsão disponível é um baseline de média móvel, não um diagnóstico
+clínico nem uma previsão de ML validada. Módulos sem histórico suficiente
+exibem o motivo e não fabricam probabilidades.
 
 ## Executar
 

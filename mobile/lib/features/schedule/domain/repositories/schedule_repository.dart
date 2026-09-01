@@ -13,5 +13,7 @@ abstract interface class ScheduleRepository {
 }
 
 class ScheduleFailure implements Exception {
-  const ScheduleFailure();
+  const ScheduleFailure({this.retryable = false});
+
+  final bool retryable;
 }

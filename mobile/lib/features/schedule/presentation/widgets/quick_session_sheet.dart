@@ -2,18 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../../core/sync/session_sync_providers.dart';
 import '../../application/schedule_providers.dart';
 import '../../domain/entities/active_appointment.dart';
 import '../../domain/repositories/schedule_repository.dart';
 
-Future<bool> showQuickSessionSheet(BuildContext context) async {
-  return await showModalBottomSheet<bool>(
-        context: context,
-        isScrollControlled: true,
-        showDragHandle: true,
-        builder: (context) => const QuickSessionSheet(),
-      ) ??
-      false;
+Future<SessionRegistrationResult?> showQuickSessionSheet(
+  BuildContext context,
+) async {
+  return showModalBottomSheet<SessionRegistrationResult>(
+    context: context,
+    isScrollControlled: true,
+    showDragHandle: true,
+    builder: (context) => const QuickSessionSheet(),
+  );
 }
 
 class QuickSessionSheet extends ConsumerStatefulWidget {
@@ -29,10 +31,11 @@ class _QuickSessionSheetState extends ConsumerState<QuickSessionSheet> {
   Future<void> register(ActiveAppointment appointment) async {
     setState(() => savingAppointmentId = appointment.id);
     try {
-      await ref
-          .read(scheduleRepositoryProvider)
-          .quickClockIn(appointment.id, const Uuid().v4());
-      if (mounted) Navigator.of(context).pop(true);
+      final result = await ref.read(registerSessionProvider)(
+        appointmentId: appointment.id,
+        idempotencyKey: const Uuid().v4(),
+      );
+      if (mounted) Navigator.of(context).pop(result);
     } on ScheduleFailure {
       if (mounted) {
         setState(() => savingAppointmentId = null);
@@ -62,7 +65,7 @@ class _QuickSessionSheetState extends ConsumerState<QuickSessionSheet> {
                   ),
                 ),
                 IconButton(
-                  onPressed: () => Navigator.of(context).pop(false),
+                  onPressed: () => Navigator.of(context).pop(),
                   tooltip: 'Fechar',
                   icon: const Icon(Icons.close),
                 ),

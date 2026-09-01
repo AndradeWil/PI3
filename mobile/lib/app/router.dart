@@ -7,6 +7,7 @@ import '../features/auth/presentation/pages/login_page.dart';
 import '../features/auth/presentation/pages/startup_page.dart';
 import '../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../features/finance/presentation/pages/finance_page.dart';
+import '../features/intelligence/presentation/pages/data_intelligence_page.dart';
 import '../features/more/presentation/pages/more_page.dart';
 import '../features/patients/presentation/pages/patient_detail_page.dart';
 import '../features/patients/presentation/pages/patient_form_page.dart';
@@ -28,6 +29,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/relatorios',
       builder: (context, state) => const ReportsPage(),
+    ),
+    GoRoute(
+      path: '/inteligencia',
+      builder: (context, state) => const DataIntelligencePage(),
     ),
     GoRoute(
       path: '/cadastros',

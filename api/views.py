@@ -434,6 +434,101 @@ class RelatorioPdfView(APIView):
         return response
 
 
+class InteligenciaDadosView(APIView):
+    def get(self, request):
+        therapist = _fisioterapeuta_do_usuario(request.user)
+        today = timezone.localdate()
+        months = [self._shift_month(today.replace(day=1), offset) for offset in range(-5, 1)]
+        sessions = Sessao.objects.filter(
+            atendimento__fisioterapeuta=therapist,
+            data_hora__date__gte=months[0],
+            data_hora__date__lt=self._shift_month(months[-1], 1),
+        )
+        monthly = []
+        for month in months:
+            next_month = self._shift_month(month, 1)
+            month_sessions = sessions.filter(
+                data_hora__date__gte=month,
+                data_hora__date__lt=next_month,
+            )
+            revenue = month_sessions.aggregate(total=Sum('valor_sessao')).get('total') or Decimal('0')
+            total_count = month_sessions.count()
+            absence_count = month_sessions.filter(
+                compareceu=False,
+                data_hora__lt=timezone.now(),
+            ).count()
+            monthly.append({
+                'mes': month.isoformat(),
+                'receita': f'{revenue:.2f}',
+                'sessoes': total_count,
+                'ausencias': absence_count,
+            })
+
+        current = monthly[-1]
+        active_patients = Atendimento.objects.filter(
+            fisioterapeuta=therapist,
+            ativo=True,
+        ).values('paciente').distinct().count()
+        forecast = self._forecast(monthly)
+        elapsed_month_sessions = sessions.filter(
+            data_hora__date__gte=months[-1],
+            data_hora__lt=timezone.now(),
+        )
+        absence_rate = (
+            round(current['ausencias'] / elapsed_month_sessions.count() * 100, 1)
+            if elapsed_month_sessions.exists()
+            else 0
+        )
+        return Response({
+            'atualizado_em': timezone.now().isoformat(),
+            'executivo': {
+                'receita_mes': current['receita'],
+                'sessoes_mes': current['sessoes'],
+                'pacientes_ativos': active_patients,
+                'taxa_ausencias': absence_rate,
+                'serie_mensal': monthly,
+            },
+            'previsao_financeira': forecast,
+            'custos_deslocamento': {
+                'status': 'dados_insuficientes',
+                'motivo': 'Custos de deslocamento ainda nao sao registrados.',
+            },
+            'glosas': {
+                'status': 'dados_insuficientes',
+                'motivo': 'Historico de glosas ainda nao esta disponivel.',
+            },
+            'rotatividade': {
+                'status': 'dados_insuficientes',
+                'motivo': 'Ainda nao ha historico suficiente para um modelo de evasao validado.',
+            },
+        })
+
+    @staticmethod
+    def _shift_month(value, offset):
+        month_index = value.year * 12 + value.month - 1 + offset
+        return value.replace(year=month_index // 12, month=month_index % 12 + 1, day=1)
+
+    @staticmethod
+    def _forecast(monthly):
+        useful = [item for item in monthly if item['sessoes'] > 0]
+        if len(useful) < 3:
+            return {
+                'status': 'dados_insuficientes',
+                'motivo': 'Sao necessarios pelo menos tres meses com sessoes.',
+            }
+        recent = useful[-3:]
+        expected = sum(Decimal(item['receita']) for item in recent) / Decimal(len(recent))
+        previous = Decimal(recent[-2]['receita'])
+        current = Decimal(recent[-1]['receita'])
+        trend = round(float((current - previous) / previous * 100), 1) if previous else 0
+        return {
+            'status': 'disponivel',
+            'metodo': 'media_movel_3_meses',
+            'receita_proximo_mes': f'{expected:.2f}',
+            'tendencia_percentual': trend,
+        }
+
+
 class LogoutView(APIView):
     def post(self, request):
         refresh = request.data.get('refresh')

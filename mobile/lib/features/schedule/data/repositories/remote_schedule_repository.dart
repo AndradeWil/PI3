@@ -59,9 +59,14 @@ class RemoteScheduleRepository implements ScheduleRepository {
           .map(ActiveAppointmentDto.fromJson)
           .map((dto) => dto.toDomain())
           .toList(growable: false);
-    } on DioException {
-      throw const ScheduleFailure();
+    } on DioException catch (error) {
+      throw ScheduleFailure(retryable: _retryable(error));
     }
+  }
+
+  bool _retryable(DioException error) {
+    final status = error.response?.statusCode;
+    return status == null || status == 408 || status == 429 || status >= 500;
   }
 
   @override

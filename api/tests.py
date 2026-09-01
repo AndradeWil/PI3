@@ -587,3 +587,70 @@ class RelatorioApiTests(FinanceiroApiTests):
         self.assertEqual(authenticated['Content-Type'], 'application/pdf')
         self.assertTrue(authenticated.content.startswith(b'%PDF'))
         self.assertEqual(anonymous.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class InteligenciaDadosApiTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='dados-ana', password='senha-123')
+        self.therapist = Fisioterapeuta.objects.create(user=self.user)
+        self.other_user = User.objects.create_user(username='dados-bia', password='senha-456')
+        self.other_therapist = Fisioterapeuta.objects.create(user=self.other_user)
+        self.client.force_authenticate(self.user)
+
+    def _session(self, therapist, months_ago, value, attended=True):
+        patient, _ = Paciente.objects.get_or_create(
+            fisioterapeuta=therapist,
+            nome=f'Paciente {therapist.id}',
+            defaults={'quadro_clinico': 'Teste'},
+        )
+        service_type, _ = TipoAtendimento.objects.get_or_create(
+            fisioterapeuta=therapist,
+            nome='Motora',
+        )
+        appointment, _ = Atendimento.objects.get_or_create(
+            fisioterapeuta=therapist,
+            paciente=patient,
+            tipo_atendimento=service_type,
+            defaults={'valor_por_sessao': value},
+        )
+        today = timezone.localdate()
+        month_index = today.year * 12 + today.month - 1 - months_ago
+        session_date = today.replace(
+            year=month_index // 12,
+            month=month_index % 12 + 1,
+            day=1,
+        )
+        return Sessao.objects.create(
+            atendimento=appointment,
+            data_hora=timezone.make_aware(
+                timezone.datetime.combine(session_date, timezone.datetime.min.time()),
+            ),
+            duracao_minutos=60,
+            valor_sessao=value,
+            compareceu=attended,
+        )
+
+    def test_executive_summary_is_isolated_and_ml_states_are_honest(self):
+        self._session(self.therapist, 0, Decimal('120.00'), attended=False)
+        self._session(self.other_therapist, 0, Decimal('999.00'))
+
+        response = self.client.get(reverse('api_inteligencia_resumo'))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['executivo']['receita_mes'], '120.00')
+        self.assertEqual(response.data['executivo']['taxa_ausencias'], 100.0)
+        self.assertEqual(len(response.data['executivo']['serie_mensal']), 6)
+        self.assertEqual(response.data['previsao_financeira']['status'], 'dados_insuficientes')
+        self.assertEqual(response.data['glosas']['status'], 'dados_insuficientes')
+
+    def test_forecast_becomes_available_after_three_useful_months(self):
+        self._session(self.therapist, 2, Decimal('100.00'))
+        self._session(self.therapist, 1, Decimal('200.00'))
+        self._session(self.therapist, 0, Decimal('300.00'))
+
+        response = self.client.get(reverse('api_inteligencia_resumo'))
+
+        forecast = response.data['previsao_financeira']
+        self.assertEqual(forecast['status'], 'disponivel')
+        self.assertEqual(forecast['receita_proximo_mes'], '200.00')
+        self.assertEqual(forecast['tendencia_percentual'], 50.0)

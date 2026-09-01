@@ -105,11 +105,11 @@ class Command(BaseCommand):
         ).delete()
         today = timezone.localdate()
         schedule = [
-            (-14, 9, 0, True),
-            (-7, 10, 30, True),
-            (-2, 14, 0, False),
+            (-75, 9, 0, True),
+            (-45, 10, 30, True),
+            (-14, 14, 0, True),
             (0, 9, 0, True),
-            (0, 11, 0, False),
+            (0, 11, 0, True),
             (0, 14, 30, False),
             (1, 10, 0, False),
             (3, 15, 30, False),

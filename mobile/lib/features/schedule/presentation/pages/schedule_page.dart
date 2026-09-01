@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/cache/cache_providers.dart';
+import '../../../../core/sync/session_sync_providers.dart';
 import '../../../../core/widgets/offline_banner.dart';
 import '../../../dashboard/application/dashboard_providers.dart';
 import '../../application/schedule_providers.dart';
@@ -39,8 +40,16 @@ class _SchedulePageState extends ConsumerState<SchedulePage> {
   }
 
   Future<void> registerSession() async {
-    final registered = await showQuickSessionSheet(context);
-    if (!registered || !mounted) return;
+    final result = await showQuickSessionSheet(context);
+    if (result == null || !mounted) return;
+    if (result == SessionRegistrationResult.queued) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sem conexao. Sessao salva para sincronizar.'),
+        ),
+      );
+      return;
+    }
     final today = _dateOnly(DateTime.now());
     setState(() => selectedDate = today);
     ref.invalidate(scheduleProvider(today));
@@ -53,7 +62,9 @@ class _SchedulePageState extends ConsumerState<SchedulePage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(sessionSynchronizationProvider);
     final schedule = ref.watch(scheduleProvider(selectedDate));
+    final pendingCount = ref.watch(pendingSessionCountProvider).value ?? 0;
     final offline = ref.watch(
       offlineResourcesProvider.select(
         (resources) => resources.contains('schedule'),
@@ -76,6 +87,16 @@ class _SchedulePageState extends ConsumerState<SchedulePage> {
             ],
           ),
           SliverToBoxAdapter(child: OfflineBanner(visible: offline)),
+          if (pendingCount > 0)
+            SliverToBoxAdapter(
+              child: _PendingSyncBanner(
+                count: pendingCount,
+                onSynchronize: () {
+                  ref.invalidate(sessionSynchronizationProvider);
+                  ref.invalidate(scheduleProvider(selectedDate));
+                },
+              ),
+            ),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             sliver: SliverToBoxAdapter(
@@ -139,6 +160,36 @@ class _SchedulePageState extends ConsumerState<SchedulePage> {
                 onRetry: () => ref.invalidate(scheduleProvider(selectedDate)),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PendingSyncBanner extends StatelessWidget {
+  const _PendingSyncBanner({required this.count, required this.onSynchronize});
+
+  final int count;
+  final VoidCallback onSynchronize;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      color: Theme.of(context).colorScheme.secondaryContainer,
+      child: Row(
+        children: [
+          const Icon(Icons.sync_problem_outlined),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              '$count registro${count == 1 ? '' : 's'} aguardando sincronizacao.',
+            ),
+          ),
+          TextButton(
+            onPressed: onSynchronize,
+            child: const Text('Sincronizar agora'),
           ),
         ],
       ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/cache/cache_providers.dart';
+import '../../../../core/sync/session_sync_providers.dart';
 import '../../../auth/application/auth_providers.dart';
 
 class MorePage extends ConsumerWidget {
@@ -45,9 +46,10 @@ class MorePage extends ConsumerWidget {
                       onTap: () => context.push('/relatorios'),
                     ),
                     const Divider(height: 1, indent: 64),
-                    const _MenuItem(
+                    _MenuItem(
                       icon: Icons.insights_outlined,
                       title: 'Inteligencia de Dados',
+                      onTap: () => context.push('/inteligencia'),
                     ),
                   ],
                 ),
@@ -60,6 +62,32 @@ class MorePage extends ConsumerWidget {
                   leading: const Icon(Icons.logout),
                   title: const Text('Sair'),
                   onTap: () async {
+                    final pending =
+                        (await ref.read(sessionOutboxProvider).readAll())
+                            .length;
+                    if (pending > 0 && context.mounted) {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Registros pendentes'),
+                          content: Text(
+                            'Existem $pending registros aguardando sincronizacao. '
+                            'Sair agora descartara esses registros.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text('Cancelar'),
+                            ),
+                            FilledButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              child: const Text('Sair e descartar'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed != true) return;
+                    }
                     await ref.read(authRepositoryProvider).logout();
                     await ref.read(localCacheProvider).clear();
                     if (context.mounted) context.go('/login');

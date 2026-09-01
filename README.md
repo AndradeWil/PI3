@@ -50,6 +50,9 @@ O cliente Flutter está em [mobile/](mobile/) e utiliza por padrão a API public
 - `GET /api/v1/financeiro/resumo/`: receita, sessões, horas e totais agrupados por período.
 - `GET /api/v1/relatorios/sessoes/`: sessões paginadas e totais por período.
 - `GET /api/v1/relatorios/sessoes/pdf/`: exportação PDF autenticada por período.
+- `GET /api/v1/inteligencia/resumo/`: série executiva, previsão baseline e disponibilidade dos módulos analíticos.
+
+A previsão financeira usa média móvel de três meses e só é exibida quando há histórico mínimo. Glosas, custos de deslocamento e evasão retornam `dados_insuficientes` enquanto o domínio ainda não possui dados adequados para modelos validados.
 
 As views HTML e a autenticação por sessão continuam disponíveis para a plataforma web.
 
