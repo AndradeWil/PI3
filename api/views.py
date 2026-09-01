@@ -1,4 +1,5 @@
 import uuid
+from decimal import Decimal
 
 from django.db.models import ProtectedError, Sum
 from django.shortcuts import get_object_or_404
@@ -284,6 +285,62 @@ class DashboardView(APIView):
             'location': session.atendimento.paciente.endereco,
             'attended': session.compareceu,
         }
+
+
+class FinanceiroResumoView(APIView):
+    def get(self, request):
+        therapist = _fisioterapeuta_do_usuario(request.user)
+        today = timezone.localdate()
+        default_start = today.replace(day=1)
+        start = self._parse_date(request.query_params.get('data_inicio'), default_start)
+        end = self._parse_date(request.query_params.get('data_fim'), today)
+        if start > end:
+            raise ValidationError({'periodo': ['A data inicial deve ser anterior a data final.']})
+
+        sessions = Sessao.objects.filter(
+            atendimento__fisioterapeuta=therapist,
+            data_hora__date__gte=start,
+            data_hora__date__lte=end,
+        ).select_related('atendimento__empresa', 'atendimento__tipo_atendimento')
+
+        total = Decimal('0')
+        total_minutes = 0
+        by_company = {}
+        by_type = {}
+        for session in sessions:
+            value = session.valor_sessao
+            total += value
+            total_minutes += session.duracao_minutos
+            company = session.atendimento.empresa.nome if session.atendimento.empresa else 'Particular'
+            service_type = session.atendimento.tipo_atendimento.nome
+            by_company[company] = by_company.get(company, Decimal('0')) + value
+            by_type[service_type] = by_type.get(service_type, Decimal('0')) + value
+
+        return Response({
+            'data_inicio': start.isoformat(),
+            'data_fim': end.isoformat(),
+            'total_geral': str(total),
+            'total_sessoes': sessions.count(),
+            'total_horas': str(round(Decimal(total_minutes) / Decimal('60'), 2)),
+            'por_empresa': self._groups(by_company),
+            'por_tipo': self._groups(by_type),
+        })
+
+    @staticmethod
+    def _parse_date(value, default):
+        if value is None:
+            return default
+        parsed = parse_date(value)
+        if parsed is None:
+            raise ValidationError({'data': ['Use o formato AAAA-MM-DD.']})
+        return parsed
+
+    @staticmethod
+    def _groups(values):
+        return [
+            {'nome': name, 'valor': str(value)}
+            for name, value in sorted(values.items(), key=lambda item: item[1], reverse=True)
+        ]
 
 
 class LogoutView(APIView):

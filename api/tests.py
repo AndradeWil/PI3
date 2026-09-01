@@ -469,3 +469,72 @@ class CadastrosAuxiliaresApiTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertEqual(response.data['code'], 'protected_resource')
+
+
+class FinanceiroApiTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='financeiro-ana', password='senha-123')
+        self.therapist = Fisioterapeuta.objects.create(user=self.user)
+        self.other_user = User.objects.create_user(username='financeiro-bia', password='senha-456')
+        self.other_therapist = Fisioterapeuta.objects.create(user=self.other_user)
+        self.company = Empresa.objects.create(fisioterapeuta=self.therapist, nome='Empresa Vida')
+        self.motor = TipoAtendimento.objects.create(
+            fisioterapeuta=self.therapist,
+            nome='Motora',
+        )
+        self.respiratory = TipoAtendimento.objects.create(
+            fisioterapeuta=self.therapist,
+            nome='Respiratoria',
+        )
+        self._session(self.therapist, 'Maria', self.motor, Decimal('120.00'), self.company, 60)
+        self._session(self.therapist, 'Joao', self.respiratory, Decimal('80.00'), None, 30)
+        other_type = TipoAtendimento.objects.create(
+            fisioterapeuta=self.other_therapist,
+            nome='Outro tipo',
+        )
+        self._session(self.other_therapist, 'Outro', other_type, Decimal('999.00'), None, 60)
+        self.client.force_authenticate(self.user)
+
+    def _session(self, therapist, name, service_type, value, company, duration):
+        patient = Paciente.objects.create(
+            fisioterapeuta=therapist,
+            nome=name,
+            quadro_clinico='Teste',
+        )
+        appointment = Atendimento.objects.create(
+            fisioterapeuta=therapist,
+            paciente=patient,
+            empresa=company,
+            tipo_atendimento=service_type,
+            valor_por_sessao=value,
+        )
+        return Sessao.objects.create(
+            atendimento=appointment,
+            data_hora=timezone.now(),
+            duracao_minutos=duration,
+            valor_sessao=value,
+        )
+
+    def test_summary_uses_current_month_and_is_isolated(self):
+        response = self.client.get(reverse('api_financeiro_resumo'))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['total_geral'], '200.00')
+        self.assertEqual(response.data['total_sessoes'], 2)
+        self.assertEqual(response.data['total_horas'], '1.50')
+        self.assertEqual(response.data['por_empresa'][0], {'nome': 'Empresa Vida', 'valor': '120.00'})
+        self.assertEqual(response.data['por_empresa'][1], {'nome': 'Particular', 'valor': '80.00'})
+
+    def test_summary_accepts_period_and_rejects_inverted_dates(self):
+        today = timezone.localdate()
+        valid = self.client.get(reverse('api_financeiro_resumo'), {
+            'data_inicio': today.isoformat(),
+            'data_fim': today.isoformat(),
+        })
+        invalid = self.client.get(reverse('api_financeiro_resumo'), {
+            'data_inicio': today.isoformat(),
+            'data_fim': (today - timedelta(days=1)).isoformat(),
+        })
+
+        self.assertEqual(valid.status_code, status.HTTP_200_OK)
+        self.assertEqual(invalid.status_code, status.HTTP_400_BAD_REQUEST)

@@ -32,9 +32,10 @@ class MorePage extends ConsumerWidget {
                       onTap: () => context.push('/cadastros'),
                     ),
                     const Divider(height: 1, indent: 64),
-                    const _MenuItem(
+                    _MenuItem(
                       icon: Icons.account_balance_wallet_outlined,
                       title: 'Financeiro',
+                      onTap: () => context.push('/financeiro'),
                     ),
                     const Divider(height: 1, indent: 64),
                     const _MenuItem(
