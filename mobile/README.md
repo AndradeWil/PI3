@@ -22,10 +22,21 @@ ao Android e preparado para iOS.
 - agenda diaria com selecao de data e acesso rapido ao paciente;
 - registro rapido de sessao pelo Dashboard ou Agenda, com selecao do atendimento e protecao contra duplicidade;
 - confirmacao de atendimento realizado e exclusao diretamente nos cards do Dashboard e Agenda;
+- cache local criptografado para leitura offline de pacientes e agendas ja sincronizadas;
+- indicador visual quando a tela exibe dados offline e limpeza do cache no logout;
 - projetos nativos Android e iOS.
 
 A URL padrao da API e `https://physiomanage.onrender.com/api/v1`. Outro ambiente
 pode ser usado com `--dart-define=API_BASE_URL=https://servidor/api/v1`.
+
+## Uso offline
+
+Pacientes e dias da Agenda consultados com conexao ficam armazenados localmente
+com criptografia AES. Se a API ficar indisponivel, o app exibe o ultimo snapshot
+salvo e mostra a faixa `Dados offline`. Cadastro, edicao e registro de sessao
+ainda exigem conexao; a fila de escrita offline sera implementada separadamente.
+
+O cache clinico e apagado quando o usuario encerra a sessao.
 
 ## Executar
 

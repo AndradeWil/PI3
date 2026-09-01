@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/cache/cache_providers.dart';
 import '../../../auth/application/auth_providers.dart';
 
 class MorePage extends ConsumerWidget {
@@ -60,6 +61,7 @@ class MorePage extends ConsumerWidget {
                   title: const Text('Sair'),
                   onTap: () async {
                     await ref.read(authRepositoryProvider).logout();
+                    await ref.read(localCacheProvider).clear();
                     if (context.mounted) context.go('/login');
                   },
                 ),

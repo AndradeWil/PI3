@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/cache/cache_providers.dart';
+import '../../../../core/widgets/offline_banner.dart';
 import '../../application/patient_providers.dart';
 import '../../domain/entities/patient.dart';
 
@@ -36,6 +38,11 @@ class _PatientsPageState extends ConsumerState<PatientsPage> {
   @override
   Widget build(BuildContext context) {
     final patients = ref.watch(patientsProvider(search));
+    final offline = ref.watch(
+      offlineResourcesProvider.select(
+        (resources) => resources.contains('patients'),
+      ),
+    );
 
     return RefreshIndicator(
       onRefresh: () => ref.refresh(patientsProvider(search).future),
@@ -53,6 +60,7 @@ class _PatientsPageState extends ConsumerState<PatientsPage> {
               const SizedBox(width: 8),
             ],
           ),
+          SliverToBoxAdapter(child: OfflineBanner(visible: offline)),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
             sliver: SliverToBoxAdapter(

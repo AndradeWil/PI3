@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/cache/cache_providers.dart';
+import '../../../../core/widgets/offline_banner.dart';
 import '../../../dashboard/application/dashboard_providers.dart';
 import '../../application/schedule_providers.dart';
 import '../../domain/entities/scheduled_session.dart';
@@ -52,6 +54,11 @@ class _SchedulePageState extends ConsumerState<SchedulePage> {
   @override
   Widget build(BuildContext context) {
     final schedule = ref.watch(scheduleProvider(selectedDate));
+    final offline = ref.watch(
+      offlineResourcesProvider.select(
+        (resources) => resources.contains('schedule'),
+      ),
+    );
     return RefreshIndicator(
       onRefresh: () => ref.refresh(scheduleProvider(selectedDate).future),
       child: CustomScrollView(
@@ -68,6 +75,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage> {
               const SizedBox(width: 8),
             ],
           ),
+          SliverToBoxAdapter(child: OfflineBanner(visible: offline)),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             sliver: SliverToBoxAdapter(
