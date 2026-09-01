@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from .views import AtendimentoAtivoListView, AtendimentoDetailView, AtendimentoListView, AtendimentoOptionsView, BaterPontoView, DashboardView, LogoutView, MeView, PacienteDetailView, PacienteListView, SessaoListView
+from .views import AtendimentoAtivoListView, AtendimentoDetailView, AtendimentoListView, AtendimentoOptionsView, BaterPontoView, DashboardView, EmpresaDetailView, EmpresaListView, LogoutView, MeView, PacienteDetailView, PacienteListView, SessaoListView, TipoAtendimentoDetailView, TipoAtendimentoListView
 
 urlpatterns = [
     path('auth/token/', TokenObtainPairView.as_view(), name='api_token'),
@@ -17,4 +17,8 @@ urlpatterns = [
     path('atendimentos/', AtendimentoListView.as_view(), name='api_atendimentos'),
     path('atendimentos/<int:pk>/', AtendimentoDetailView.as_view(), name='api_atendimento_detail'),
     path('atendimentos/<int:pk>/bater-ponto/', BaterPontoView.as_view(), name='api_bater_ponto'),
+    path('empresas/', EmpresaListView.as_view(), name='api_empresas'),
+    path('empresas/<int:pk>/', EmpresaDetailView.as_view(), name='api_empresa_detail'),
+    path('tipos-atendimento/', TipoAtendimentoListView.as_view(), name='api_tipos_atendimento'),
+    path('tipos-atendimento/<int:pk>/', TipoAtendimentoDetailView.as_view(), name='api_tipo_atendimento_detail'),
 ]

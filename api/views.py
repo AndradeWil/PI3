@@ -1,13 +1,18 @@
 import uuid
 
-from django.db.models import Sum
+from django.db.models import ProtectedError, Sum
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
-from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateAPIView
+from rest_framework.generics import (
+    ListAPIView,
+    ListCreateAPIView,
+    RetrieveUpdateAPIView,
+    RetrieveUpdateDestroyAPIView,
+)
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -18,10 +23,12 @@ from core.models import Atendimento, Empresa, Fisioterapeuta, Paciente, Sessao, 
 from .serializers import (
     AtendimentoResumoSerializer,
     AtendimentoSerializer,
+    EmpresaSerializer,
     EmpresaOpcaoSerializer,
     PacienteSerializer,
     SessaoSerializer,
     TipoAtendimentoOpcaoSerializer,
+    TipoAtendimentoSerializer,
 )
 
 
@@ -135,6 +142,58 @@ class AtendimentoOptionsView(APIView):
                 many=True,
             ).data,
         })
+
+
+class EmpresaListView(ListCreateAPIView):
+    serializer_class = EmpresaSerializer
+    pagination_class = ApiPagination
+
+    def get_queryset(self):
+        therapist = _fisioterapeuta_do_usuario(self.request.user)
+        return Empresa.objects.filter(fisioterapeuta=therapist).order_by('nome')
+
+    def perform_create(self, serializer):
+        serializer.save(fisioterapeuta=_fisioterapeuta_do_usuario(self.request.user))
+
+
+class EmpresaDetailView(RetrieveUpdateDestroyAPIView):
+    serializer_class = EmpresaSerializer
+
+    def get_queryset(self):
+        therapist = _fisioterapeuta_do_usuario(self.request.user)
+        return Empresa.objects.filter(fisioterapeuta=therapist)
+
+
+class TipoAtendimentoListView(ListCreateAPIView):
+    serializer_class = TipoAtendimentoSerializer
+    pagination_class = ApiPagination
+
+    def get_queryset(self):
+        therapist = _fisioterapeuta_do_usuario(self.request.user)
+        return TipoAtendimento.objects.filter(fisioterapeuta=therapist).order_by('nome')
+
+    def perform_create(self, serializer):
+        serializer.save(fisioterapeuta=_fisioterapeuta_do_usuario(self.request.user))
+
+
+class TipoAtendimentoDetailView(RetrieveUpdateDestroyAPIView):
+    serializer_class = TipoAtendimentoSerializer
+
+    def get_queryset(self):
+        therapist = _fisioterapeuta_do_usuario(self.request.user)
+        return TipoAtendimento.objects.filter(fisioterapeuta=therapist)
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            return super().destroy(request, *args, **kwargs)
+        except ProtectedError:
+            return Response(
+                {
+                    'code': 'protected_resource',
+                    'message': 'Tipo vinculado a atendimentos nao pode ser excluido.',
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
 
 
 class BaterPontoView(APIView):

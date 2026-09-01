@@ -42,6 +42,10 @@ O cliente Flutter está em [mobile/](mobile/) e utiliza por padrão a API public
 - `GET, PATCH /api/v1/atendimentos/{id}/`: detalhe e edição de atendimento.
 - `GET /api/v1/atendimentos/opcoes/`: pacientes, empresas e tipos disponíveis ao formulário.
 - `POST /api/v1/atendimentos/{id}/bater-ponto/`: registra sessão com `Idempotency-Key` UUID.
+- `GET, POST /api/v1/empresas/`: lista e cadastro de empresas.
+- `GET, PATCH, DELETE /api/v1/empresas/{id}/`: edição e exclusão de empresa.
+- `GET, POST /api/v1/tipos-atendimento/`: lista e cadastro de tipos.
+- `GET, PATCH, DELETE /api/v1/tipos-atendimento/{id}/`: edição e exclusão protegida de tipo.
 
 As views HTML e a autenticação por sessão continuam disponíveis para a plataforma web.
 

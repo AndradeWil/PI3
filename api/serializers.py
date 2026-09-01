@@ -118,3 +118,36 @@ class TipoAtendimentoOpcaoSerializer(serializers.ModelSerializer):
     class Meta:
         model = TipoAtendimento
         fields = ('id', 'nome', 'valor_padrao')
+
+
+class EmpresaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Empresa
+        fields = ('id', 'nome', 'contato', 'telefone', 'email')
+
+    def validate_nome(self, value):
+        therapist = self.context['request'].user.fisioterapeuta
+        queryset = Empresa.objects.filter(fisioterapeuta=therapist, nome__iexact=value.strip())
+        if self.instance is not None:
+            queryset = queryset.exclude(pk=self.instance.pk)
+        if queryset.exists():
+            raise serializers.ValidationError('Ja existe uma empresa com este nome.')
+        return value.strip()
+
+
+class TipoAtendimentoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TipoAtendimento
+        fields = ('id', 'nome', 'descricao', 'valor_padrao')
+
+    def validate_nome(self, value):
+        therapist = self.context['request'].user.fisioterapeuta
+        queryset = TipoAtendimento.objects.filter(
+            fisioterapeuta=therapist,
+            nome__iexact=value.strip(),
+        )
+        if self.instance is not None:
+            queryset = queryset.exclude(pk=self.instance.pk)
+        if queryset.exists():
+            raise serializers.ValidationError('Ja existe um tipo com este nome.')
+        return value.strip()

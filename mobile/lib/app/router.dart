@@ -10,6 +10,7 @@ import '../features/more/presentation/pages/more_page.dart';
 import '../features/patients/presentation/pages/patient_detail_page.dart';
 import '../features/patients/presentation/pages/patient_form_page.dart';
 import '../features/patients/presentation/pages/patients_page.dart';
+import '../features/registries/presentation/pages/registries_page.dart';
 import '../features/schedule/presentation/pages/schedule_page.dart';
 import 'shell/app_shell.dart';
 
@@ -18,6 +19,10 @@ final appRouter = GoRouter(
   routes: [
     GoRoute(path: '/', builder: (context, state) => const StartupPage()),
     GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
+    GoRoute(
+      path: '/cadastros',
+      builder: (context, state) => const RegistriesPage(),
+    ),
     GoRoute(
       path: '/atendimentos',
       builder: (context, state) => const AppointmentsPage(),

@@ -390,3 +390,82 @@ class AtendimentoApiTests(APITestCase):
         self.assertEqual(update_response.status_code, status.HTTP_200_OK)
         self.assertFalse(update_response.data['ativo'])
         self.assertEqual(cross_response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class CadastrosAuxiliaresApiTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='cadastros-ana', password='senha-123')
+        self.therapist = Fisioterapeuta.objects.create(user=self.user)
+        self.other_user = User.objects.create_user(username='cadastros-bia', password='senha-456')
+        self.other_therapist = Fisioterapeuta.objects.create(user=self.other_user)
+        self.company = Empresa.objects.create(fisioterapeuta=self.therapist, nome='Empresa Vida')
+        Empresa.objects.create(fisioterapeuta=self.other_therapist, nome='Empresa de Bia')
+        self.appointment_type = TipoAtendimento.objects.create(
+            fisioterapeuta=self.therapist,
+            nome='Fisioterapia Motora',
+            valor_padrao=Decimal('120.00'),
+        )
+        TipoAtendimento.objects.create(
+            fisioterapeuta=self.other_therapist,
+            nome='Tipo de Bia',
+        )
+        self.client.force_authenticate(self.user)
+
+    def test_lists_are_isolated_and_create_assigns_owner(self):
+        companies = self.client.get(reverse('api_empresas'))
+        types = self.client.get(reverse('api_tipos_atendimento'))
+        created = self.client.post(reverse('api_empresas'), {'nome': 'Nova Empresa'})
+
+        self.assertEqual(companies.data['count'], 1)
+        self.assertEqual(companies.data['results'][0]['nome'], 'Empresa Vida')
+        self.assertEqual(types.data['count'], 1)
+        self.assertEqual(types.data['results'][0]['nome'], 'Fisioterapia Motora')
+        self.assertEqual(created.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            Empresa.objects.get(id=created.data['id']).fisioterapeuta,
+            self.therapist,
+        )
+
+    def test_duplicate_names_are_rejected_case_insensitively(self):
+        company = self.client.post(reverse('api_empresas'), {'nome': 'empresa vida'})
+        appointment_type = self.client.post(
+            reverse('api_tipos_atendimento'),
+            {'nome': 'FISIOTERAPIA MOTORA'},
+        )
+
+        self.assertEqual(company.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(appointment_type.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_deleting_company_preserves_patient_as_private(self):
+        patient = Paciente.objects.create(
+            fisioterapeuta=self.therapist,
+            empresa=self.company,
+            nome='Maria',
+            quadro_clinico='Teste',
+        )
+
+        response = self.client.delete(reverse('api_empresa_detail', args=[self.company.id]))
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        patient.refresh_from_db()
+        self.assertIsNone(patient.empresa)
+
+    def test_deleting_type_in_use_returns_conflict(self):
+        patient = Paciente.objects.create(
+            fisioterapeuta=self.therapist,
+            nome='Maria',
+            quadro_clinico='Teste',
+        )
+        Atendimento.objects.create(
+            fisioterapeuta=self.therapist,
+            paciente=patient,
+            tipo_atendimento=self.appointment_type,
+            valor_por_sessao=Decimal('120.00'),
+        )
+
+        response = self.client.delete(
+            reverse('api_tipo_atendimento_detail', args=[self.appointment_type.id]),
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+        self.assertEqual(response.data['code'], 'protected_resource')
