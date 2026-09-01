@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:physiomanage_mobile/features/schedule/application/schedule_providers.dart';
+import 'package:physiomanage_mobile/features/schedule/domain/entities/active_appointment.dart';
 import 'package:physiomanage_mobile/features/schedule/domain/entities/scheduled_session.dart';
 import 'package:physiomanage_mobile/features/schedule/domain/repositories/schedule_repository.dart';
 import 'package:physiomanage_mobile/features/schedule/presentation/pages/schedule_page.dart';
@@ -32,6 +33,9 @@ void main() {
 
 class _ScheduleRepository implements ScheduleRepository {
   @override
+  Future<List<ActiveAppointment>> listActiveAppointments() async => const [];
+
+  @override
   Future<List<ScheduledSession>> listByDate(DateTime date) async {
     return [
       ScheduledSession(
@@ -48,5 +52,13 @@ class _ScheduleRepository implements ScheduleRepository {
         notes: '',
       ),
     ];
+  }
+
+  @override
+  Future<ScheduledSession> quickClockIn(
+    int appointmentId,
+    String idempotencyKey,
+  ) async {
+    return (await listByDate(DateTime.now())).first;
   }
 }

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from core.models import Paciente, Sessao
+from core.models import Atendimento, Paciente, Sessao
 
 
 class PacienteSerializer(serializers.ModelSerializer):
@@ -50,4 +50,18 @@ class SessaoSerializer(serializers.ModelSerializer):
             'valor_sessao',
             'compareceu',
             'observacoes',
+        )
+
+
+class AtendimentoResumoSerializer(serializers.ModelSerializer):
+    paciente_nome = serializers.CharField(source='paciente.nome', read_only=True)
+    tipo_atendimento_nome = serializers.CharField(source='tipo_atendimento.nome', read_only=True)
+
+    class Meta:
+        model = Atendimento
+        fields = (
+            'id',
+            'paciente_nome',
+            'tipo_atendimento_nome',
+            'valor_por_sessao',
         )

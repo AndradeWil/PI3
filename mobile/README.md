@@ -15,6 +15,7 @@ ao Android e preparado para iOS.
 - restauracao de sessao e logout com blacklist do refresh token;
 - lista, busca, detalhe, cadastro e edicao de pacientes;
 - agenda diaria com selecao de data e acesso rapido ao paciente;
+- registro rapido de sessao com selecao do atendimento e protecao contra duplicidade;
 - projetos nativos Android e iOS.
 
 A URL padrao da API e `https://physiomanage.onrender.com/api/v1`. Outro ambiente

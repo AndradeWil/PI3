@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../dashboard/application/dashboard_providers.dart';
 import '../../application/schedule_providers.dart';
 import '../../domain/entities/scheduled_session.dart';
+import '../widgets/quick_session_sheet.dart';
 
 class SchedulePage extends ConsumerStatefulWidget {
   const SchedulePage({super.key});
@@ -33,6 +35,24 @@ class _SchedulePageState extends ConsumerState<SchedulePage> {
     if (date != null) setState(() => selectedDate = _dateOnly(date));
   }
 
+  Future<void> registerSession() async {
+    final registered = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (context) => const QuickSessionSheet(),
+    );
+    if (registered != true || !mounted) return;
+    final today = _dateOnly(DateTime.now());
+    setState(() => selectedDate = today);
+    ref.invalidate(scheduleProvider(today));
+    ref.invalidate(activeAppointmentsProvider);
+    ref.invalidate(dashboardSummaryProvider);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Sessao registrada com sucesso.')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final schedule = ref.watch(scheduleProvider(selectedDate));
@@ -41,7 +61,17 @@ class _SchedulePageState extends ConsumerState<SchedulePage> {
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
-          const SliverAppBar.large(title: Text('Agenda')),
+          SliverAppBar.large(
+            title: const Text('Agenda'),
+            actions: [
+              IconButton(
+                onPressed: registerSession,
+                tooltip: 'Registrar sessao',
+                icon: const Icon(Icons.punch_clock_outlined),
+              ),
+              const SizedBox(width: 8),
+            ],
+          ),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             sliver: SliverToBoxAdapter(

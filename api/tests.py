@@ -1,5 +1,6 @@
 from datetime import timedelta
 from decimal import Decimal
+from uuid import uuid4
 
 from django.contrib.auth.models import User
 from django.urls import reverse
@@ -205,9 +206,14 @@ class SessaoApiTests(APITestCase):
         self.other_user = User.objects.create_user(username='agenda-bia', password='senha-456')
         self.other_fisioterapeuta = Fisioterapeuta.objects.create(user=self.other_user)
         self.selected_date = timezone.localdate() + timedelta(days=2)
-        self._create_session(self.fisioterapeuta, 'Maria', self.selected_date, 14)
+        self.appointment = self._create_session(self.fisioterapeuta, 'Maria', self.selected_date, 14).atendimento
         self._create_session(self.fisioterapeuta, 'Joao', self.selected_date + timedelta(days=1), 10)
-        self._create_session(self.other_fisioterapeuta, 'Paciente de Bia', self.selected_date, 16)
+        self.other_appointment = self._create_session(
+            self.other_fisioterapeuta,
+            'Paciente de Bia',
+            self.selected_date,
+            16,
+        ).atendimento
 
     def _create_session(self, fisioterapeuta, patient_name, selected_date, hour):
         patient = Paciente.objects.create(
@@ -257,3 +263,35 @@ class SessaoApiTests(APITestCase):
         response = self.client.get(reverse('api_sessoes'), {'data': '01-09-2026'})
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_active_appointments_are_isolated(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(reverse('api_atendimentos_ativos'))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        patient_names = [item['paciente_nome'] for item in response.data]
+        self.assertCountEqual(patient_names, ['Joao', 'Maria'])
+
+    def test_quick_clock_in_is_idempotent(self):
+        self.client.force_authenticate(self.user)
+        key = str(uuid4())
+        url = reverse('api_bater_ponto', args=[self.appointment.id])
+
+        first = self.client.post(url, HTTP_IDEMPOTENCY_KEY=key)
+        second = self.client.post(url, HTTP_IDEMPOTENCY_KEY=key)
+
+        self.assertEqual(first.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(second.status_code, status.HTTP_200_OK)
+        self.assertEqual(first.data['id'], second.data['id'])
+        self.assertEqual(Sessao.objects.filter(idempotency_key=key).count(), 1)
+
+    def test_quick_clock_in_hides_another_therapists_appointment(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(
+            reverse('api_bater_ponto', args=[self.other_appointment.id]),
+            HTTP_IDEMPOTENCY_KEY=str(uuid4()),
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

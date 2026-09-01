@@ -70,6 +70,7 @@ class Atendimento(models.Model):
 
 class Sessao(models.Model):
 	atendimento = models.ForeignKey(Atendimento, on_delete=models.CASCADE, related_name='sessoes')
+	idempotency_key = models.UUIDField(null=True, blank=True, unique=True)
 	data_hora = models.DateTimeField()
 	duracao_minutos = models.PositiveIntegerField()
 	valor_sessao = models.DecimalField(max_digits=10, decimal_places=2)

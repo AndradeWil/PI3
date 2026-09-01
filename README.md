@@ -37,6 +37,8 @@ O cliente Flutter está em [mobile/](mobile/) e utiliza por padrão a API public
 - `GET, POST /api/v1/pacientes/`: lista paginada, busca e cadastro de pacientes.
 - `GET, PATCH /api/v1/pacientes/{id}/`: consulta e edição de paciente.
 - `GET /api/v1/sessoes/?data=AAAA-MM-DD`: agenda diária do fisioterapeuta.
+- `GET /api/v1/atendimentos/ativos/`: atendimentos disponíveis para registro rápido.
+- `POST /api/v1/atendimentos/{id}/bater-ponto/`: registra sessão com `Idempotency-Key` UUID.
 
 As views HTML e a autenticação por sessão continuam disponíveis para a plataforma web.
 
@@ -49,6 +51,16 @@ O `build.sh` executa o comando idempotente `ensure_admin`. Configure no painel *
 - `DJANGO_SUPERUSER_PASSWORD`
 
 No próximo deploy, o usuário será criado ou atualizado como administrador. Se alguma variável estiver ausente, o build continua sem criar usuário. A senha deve existir somente nas variáveis secretas do Render, nunca no repositório.
+
+### Usuário e massa de demonstração
+
+Para manter uma conta pronta para apresentações, configure também no **Environment** do Render:
+
+- `DJANGO_DEMO_USERNAME`
+- `DJANGO_DEMO_EMAIL`
+- `DJANGO_DEMO_PASSWORD`
+
+O `build.sh` executa `ensure_demo_data` e cria ou atualiza uma conta de fisioterapeuta com empresa, tipos de atendimento, quatro pacientes, atendimentos ativos e sessões de histórico/agenda. A operação é idempotente: novos deploys atualizam a massa marcada como demonstração sem duplicá-la. Use credenciais próprias para apresentação e não publique a senha no README, nos slides ou no Git.
 
 > O filesystem dos serviços gratuitos do Render é efêmero. Um banco SQLite armazenado nele pode perder usuários e dados em reinicializações ou novos deploys. Para dados persistentes, use PostgreSQL externo/persistente e configure o Django por variável de ambiente.
 

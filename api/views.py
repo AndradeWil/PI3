@@ -1,3 +1,5 @@
+import uuid
+
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -13,7 +15,7 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 from core.models import Atendimento, Fisioterapeuta, Paciente, Sessao
 
-from .serializers import PacienteSerializer, SessaoSerializer
+from .serializers import AtendimentoResumoSerializer, PacienteSerializer, SessaoSerializer
 
 
 def _fisioterapeuta_do_usuario(user):
@@ -67,6 +69,54 @@ class SessaoListView(ListAPIView):
         if selected_date is None:
             raise ValidationError({'data': ['Use o formato AAAA-MM-DD.']})
         return queryset.filter(data_hora__date=selected_date)
+
+
+class AtendimentoAtivoListView(ListAPIView):
+    serializer_class = AtendimentoResumoSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        fisioterapeuta = _fisioterapeuta_do_usuario(self.request.user)
+        return Atendimento.objects.filter(
+            fisioterapeuta=fisioterapeuta,
+            ativo=True,
+        ).select_related('paciente', 'tipo_atendimento').order_by('paciente__nome')
+
+
+class BaterPontoView(APIView):
+    def post(self, request, pk):
+        fisioterapeuta = _fisioterapeuta_do_usuario(request.user)
+        atendimento = get_object_or_404(
+            Atendimento,
+            pk=pk,
+            fisioterapeuta=fisioterapeuta,
+            ativo=True,
+        )
+        key_value = request.headers.get('Idempotency-Key', '')
+        try:
+            idempotency_key = uuid.UUID(key_value)
+        except ValueError:
+            raise ValidationError({
+                'idempotency_key': ['Envie um UUID valido no cabecalho Idempotency-Key.'],
+            })
+
+        session, created = Sessao.objects.get_or_create(
+            idempotency_key=idempotency_key,
+            defaults={
+                'atendimento': atendimento,
+                'data_hora': timezone.now(),
+                'duracao_minutos': 60,
+                'valor_sessao': atendimento.valor_por_sessao,
+                'compareceu': True,
+                'observacoes': 'Registro rapido pelo aplicativo mobile.',
+            },
+        )
+        if session.atendimento_id != atendimento.id:
+            raise ValidationError({'idempotency_key': ['Chave ja utilizada em outro atendimento.']})
+        return Response(
+            SessaoSerializer(session).data,
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
+        )
 
 
 class MeView(APIView):

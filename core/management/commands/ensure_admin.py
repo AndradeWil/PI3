@@ -3,6 +3,8 @@ import os
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
+from core.models import Fisioterapeuta
+
 
 class Command(BaseCommand):
     help = 'Cria ou atualiza um superusuario a partir de variaveis de ambiente.'
@@ -26,6 +28,7 @@ class Command(BaseCommand):
         user.is_superuser = True
         user.set_password(password)
         user.save(update_fields=['email', 'is_staff', 'is_superuser', 'password'])
+        Fisioterapeuta.objects.get_or_create(user=user)
 
         action = 'criado' if created else 'atualizado'
         self.stdout.write(self.style.SUCCESS(f'Administrador {action} com sucesso.'))
